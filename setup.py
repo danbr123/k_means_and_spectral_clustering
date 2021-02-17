@@ -51,7 +51,7 @@ setup(
             # the qualified name of the extension module to build
             'mykmeanssp',
             # the files to compile into our module relative to ``setup.py``
-            ['kmeans.c'],
+            ['kmeans++.c'],
         ),
     ]
 )

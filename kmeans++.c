@@ -1,20 +1,20 @@
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 typedef struct Cluster Cluster;
+typedef struct Point Point;
+
 double find_dist_from_cluster();
 void add_point_to_cluster();
 Cluster* create_cluster();
-void print_point(double* point, int dim);
-void print_cluster(Cluster* c);
 void update_cluster_center(Cluster *c);
 Cluster* find_min_dist_cluster(Cluster** cluster_array, double* point, int k);
 void cluster_step(Cluster** clusters, double** data, int points_count, int k);
 void clear_cluster(Cluster** c, int K);
-void print_clusters_centers(Cluster ** clusters, int K, int d);
 void remember_centers(Cluster** clusters, int K, int d, double ** prev_centers);
 Cluster ** firstKClusters(int d, int K, int N, double **data);
-double** read_from_file(int n, int d);
 int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d);
 
 
@@ -24,26 +24,22 @@ struct Cluster{
     int idx; /*first EMPTY index in the points list, represents the "length" of the points array*/
     int dim;  /*size of each point array and center array, must be the same size*/
 };
+struct Point{
+    double* coordinates;  /*list of doubles*/
+    int tag;  /*tag is the index of the point as created in the raw data*/
+};
 
 
-
-
-int main(int argc, char* argv[]) {
-    int K = atoi(argv[1]);
-    int N = atoi(argv[2]);
-    int d = atoi(argv[3]);
-    int MAX_ITER = atoi(argv[4]);
+/*
+ * Main function that get all the arguments and print K-clusters
+ */
+static Cluster* Cmain(int K, int N, int d, int MAX_ITER, double ** data, double ** Kfirstcentroids) {
     int iteration =0;
     int equal = 0;
     int i,j;
     Cluster **clusters;
     double **prev_centers;
-    double **data = read_from_file(N, d);
-    if (data == NULL || K>=N || argc != 5){
-        printf("Error in data and/or parameters");
-        return 0;
-    }
-    clusters = firstKClusters(d,K,N, data);
+    clusters = firstKClusters(d,K,N, Kfirstcentroids);
     prev_centers = (double **)malloc(sizeof(double *)*(K));
 
     for(i=0;i<K;i++)
@@ -60,11 +56,112 @@ int main(int argc, char* argv[]) {
         equal = cluster_equal(clusters,prev_centers, K, d);
         iteration++;
     }
-    print_clusters_centers(clusters, K, d);
-    return 0;
+    free(prev_centers);
+
+    return clusters;
 }
 
+/*
+ * This actually defines the Kmeans_main function using a wrapper C API function
+ * The wrapping function needs a PyObject* self argument.
+ * It has input PyObject *args from Python.
+ */
+static PyObject* Kmeans_main(PyObject *self, PyObject *args)
+{
+    int K, N, d, MAX_ITER, i, j;
+    Cluster **clusters;
+    PyObject *dataList, *KfirstcentroidsList, *dim0, *dim1, *Py_Clusters_List, *item;
 
+
+    if(!PyArg_ParseTuple(args, "iiiiOO", &K, &N, &d, &MAX_ITER, &dataList, &KfirstcentroidsList)) {
+        /* In the CPython API, a NULL value is never valid for a
+                     PyObject* so it is used to signal that an error has occurred. */
+        PyErr_SetString(PyExc_NameError,"Error in data and/or parameters in the API stage");
+        PyErr_Occurred();
+        return NULL;
+        }
+    double ** data = (double **)malloc(sizeof(double *)*N);
+    double ** Kfirstcentroids = (double **)malloc(sizeof(double *)*K);
+
+    for (i=0; i < N; i++) {
+        data[i] = (double*)calloc(d, sizeof(double));
+        if(i<K)
+            Kfirstcentroids[i] = (double*)calloc(d, sizeof(double));
+        for (j=0; j < d; j++){
+            dim0 = PyList_GetItem(dataList,i);
+            dim1 = PyList_GetItem(dim0,j);
+            data[i][j] = PyFloat_AsDouble(dim1);
+            if(i<K){
+                dim0 = PyList_GetItem(KfirstcentroidsList,i);
+                dim1 = PyList_GetItem(dim0,j);
+                Kfirstcentroids[i][j] = PyFloat_AsDouble(dim1);
+            }
+        }
+    }
+    /*Call the C Kmean algorithm from task 1 */
+    clusters = Cmain(K, N, d, MAX_ITER, data, Kfirstcentroids);
+    for (i=0; i < N; i++) {
+        free(data[i]);
+        if(i<K)
+            free(Kfirstcentroids[i]);
+    }
+    free(data);
+    free(Kfirstcentroids);
+
+    /*Build a Python list from clusters */
+    Py_Clusters_List = PyList_New(K*d);
+    for (i=0; i<K; i++) {
+        for (j=0; j<d; j++) {
+          item = Py_BuildValue("d",clusters[i]->center[j]);
+          PyList_SetItem(Py_Clusters_List, i*d + j, item);
+      }
+    }
+    for(i=0;i<K;i++)
+    {
+        free(clusters[i]->center);
+        free(clusters[i]->points);
+        free(clusters[i]);
+    }
+    free(clusters);
+    return Py_Clusters_List; /*  Py_BuildValue(...) returns a PyObject*  */
+}
+
+/*
+ * This array tells Python what methods this module has.
+ * We will use it in the next structure
+ */
+static PyMethodDef KmeansMethods[] = {
+    {"Kmeans",                   /* the Python method name that will be used */
+      (PyCFunction) Kmeans_main, /* the C-function that implements the Python function and returns static PyObject*  */
+      METH_VARARGS,           /* flags indicating parametersaccepted for this function */
+      PyDoc_STR("K-Means Algorithm")}, /*  The docstring for the function */
+    {NULL, NULL, 0, NULL}     /* The last entry must be all NULL as shown to act as a
+                                 sentinel. Python looks for this entry to know that all
+                                 of the functions for the module have been defined. */
+};
+
+/* This initiates the module using the above definitions. */
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "mykmeanssp", /* name of module */
+    NULL, /* module documentation, may be NULL */
+    -1,  /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+    KmeansMethods /* the PyMethodDef array from before containing the methods of the extension */
+};
+
+
+PyMODINIT_FUNC
+PyInit_mykmeanssp(void)
+{
+    PyObject *m;
+    m = PyModule_Create(&moduledef);
+    if (!m) {
+        return NULL;
+    }
+    return m;
+}
+
+/* -- Methods -- */
 /*create a new cluster with a single point (for the first step of the algorithm). center is calculated as well*/
 Cluster* create_cluster(double* initial_point, int dim, int data_len){
     Cluster* c = malloc(sizeof(Cluster));
@@ -100,7 +197,6 @@ void clear_cluster(Cluster** c, int K){
     int i;
     for (i=0; i<K; ++i){
         c[i]->idx = 0; /*clearing the idx instead of removing the points. points beyond the idx are not used*/
-
     }
 }
 
@@ -143,58 +239,6 @@ void cluster_step(Cluster** clusters, double** data, int points_count, int k){
     }
 }
 
-/*internal use*/
-void print_cluster(Cluster* c){
-    int i;
-    printf("\nCluster Dimension: %d\n ", c->dim);
-    printf("\nPrinting Cluster Center: \n ");
-    print_point(c->center, c->dim);
-    printf("\nCurrent Index: %d\n ", c->idx);
-    printf("\nPrinting Cluster Points: \n ");
-    for (i=0; i< c->idx; ++i){
-        printf("Point #%d: ", i);
-        print_point(c->points[i], c->dim);
-        printf("\n");
-
-    }
-}
-
-void print_point(double* point, int dim){
-    int i;
-    for (i=0; i<dim; i++){
-        printf("%f,", point[i]);
-    }
-}
-
-double** read_from_file(int n, int d){
-    int point_counter = 0;
-    int i = 0;
-    char c;
-    double **point_array=(double **)malloc(sizeof(double *)*n);
-    point_array[point_counter] = (double*)calloc(d, sizeof(double));
-    while (scanf("%lf%c", &point_array[point_counter][i], &c) == 2){
-        i++;
-        if (c == '\n'){
-            if (i != d) return NULL;
-            i = 0;
-            point_counter++;
-            point_array[point_counter] = (double*)calloc(d, sizeof(double));
-        }
-        if (i >= d || point_counter > n){
-            return NULL;
-        }
-    }
-    if (c != '\n') point_counter++;  /* if we reach EOF, we wont increase pointer_counter in the loop
-                                        so we do it now for the next condition */
-    if (n > point_counter) return NULL;
-    return point_array;
-}
-
-
-
-/*  -----OMRI's CODE-----   */
-
-
 Cluster ** firstKClusters(int d, int K, int N, double **data){
     int i;
     Cluster **clusters=(Cluster **)malloc(sizeof(Cluster*)*K);
@@ -223,19 +267,6 @@ int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d) {
     }
     return 1;
 }
-void print_clusters_centers(Cluster ** clusters, int K, int d){
-    double val, rounded_down;
-    int i,j;
-    for (i = 0; i <K; i++) {
-        for (j = 0; j < d; j++) {
-            val = clusters[i]->center[j];
-            rounded_down = (double)((int)(val * 100)) / 100;
-            printf("%0.2f",rounded_down);
-            if(j<d -1)
-                printf("%s",",");
-        }
-        if(i<K -1)
-            printf("%s","\n");
-    }
-}
+
+
 

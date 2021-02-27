@@ -4,7 +4,7 @@ EPSILON = 0.001
 
 def find_DDM(mat):
     size = mat.shape[0]
-    D = np.zeros(shape=(size, size), dtype=np.float64)
+    D = np.zeros(shape=(size, size), dtype=np.float16)
     D_sq = np.zeros_like(D)
     for i in range(size):
         D[i][i] = np.sum(mat[i])
@@ -25,11 +25,13 @@ def MGSA(mat):  # Modified Gram-Schmidt Algorithm
     R = np.zeros_like(mat)
     Q = np.zeros_like(mat)
     for i in range(size):
-        R[i][i] = eucledian_norm(U[i])
-        Q[i] = U[i]/R[i][i]
+        R[i][i] = eucledian_norm(U[:,i])
+        Q[:,i] = U[:,i]/R[i][i]
+        print("U[i]:",U[:,i])
+        print("R[i][i]:", R[i][i])
         for j in range(i+1, size):
-            R[i][j] = np.dot(Q[i], U[j])
-            U[j] = U[j] - R[i][j]*Q[i]
+            R[i][j] = np.dot(Q[:,i], U[:,j])
+            U[:,j] = U[:,j] - R[i][j]*Q[:,i]
     return Q, R
 
 def QR_iter(mat):
@@ -53,7 +55,8 @@ def calc_det(mat): # TODO: finish
 
 
 def eucledian_norm(arr):
-    return np.linalg.norm(arr)  # TODO: write the formula instead
+    return np.linalg.norm(arr, ord=2)  # TODO: write the formula instead
+
 
 
 

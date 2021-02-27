@@ -6,21 +6,21 @@
 typedef struct Cluster Cluster;
 typedef struct Point Point;
 
-double find_dist_from_cluster();
-void add_point_to_cluster();
-Cluster* create_cluster();
+double find_dist_from_cluster(Point * point, Cluster* cluster);
+void add_point_to_cluster(Point * point, Cluster *c);
+Cluster* create_cluster(Point * initial_point, int dim, int data_len);
 void update_cluster_center(Cluster *c);
-Cluster* find_min_dist_cluster(Cluster** cluster_array, double* point, int k);
-void cluster_step(Cluster** clusters, double** data, int points_count, int k);
+Cluster* find_min_dist_cluster(Cluster** cluster_array, Point* point, int k);
+void cluster_step(Cluster** clusters, Point ** data, int points_count, int k);
 void clear_cluster(Cluster** c, int K);
 void remember_centers(Cluster** clusters, int K, int d, double ** prev_centers);
-Cluster ** firstKClusters(int d, int K, int N, double **data);
+Cluster ** firstKClusters(int d, int K, int N, Point ** data);
 int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d);
 
 
 struct Cluster{
     double* center;  /*list of center coordinates*/
-    double** points;  /*list of points, each point is a list of doubles*/
+    Point ** points;  /*list of points, each point is a list of doubles*/
     int idx; /*first EMPTY index in the points list, represents the "length" of the points array*/
     int dim;  /*size of each point array and center array, must be the same size*/
 };
@@ -33,7 +33,7 @@ struct Point{
 /*
  * Main function that get all the arguments and print K-clusters
  */
-static Cluster* Cmain(int K, int N, int d, int MAX_ITER, double ** data, double ** Kfirstcentroids) {
+static Cluster** Cmain(int K, int N, int d, int MAX_ITER, Point ** data, Point ** Kfirstcentroids) {
     int iteration =0;
     int equal = 0;
     int i,j;
@@ -56,8 +56,11 @@ static Cluster* Cmain(int K, int N, int d, int MAX_ITER, double ** data, double 
         equal = cluster_equal(clusters,prev_centers, K, d);
         iteration++;
     }
+    for(i=0;i<K;i++)
+    {
+        free(prev_centers[i]);
+    }
     free(prev_centers);
-
     return clusters;
 }
 
@@ -68,9 +71,11 @@ static Cluster* Cmain(int K, int N, int d, int MAX_ITER, double ** data, double 
  */
 static PyObject* Kmeans_main(PyObject *self, PyObject *args)
 {
-    int K, N, d, MAX_ITER, i, j;
+    int K, N, d, MAX_ITER, i, j,count=0;
     Cluster **clusters;
     PyObject *dataList, *KfirstcentroidsList, *dim0, *dim1, *Py_Clusters_List, *item;
+    PyObject *mark = Py_BuildValue("i",-1);
+
 
 
     if(!PyArg_ParseTuple(args, "iiiiOO", &K, &N, &d, &MAX_ITER, &dataList, &KfirstcentroidsList)) {
@@ -80,42 +85,53 @@ static PyObject* Kmeans_main(PyObject *self, PyObject *args)
         PyErr_Occurred();
         return NULL;
         }
-    double ** data = (double **)malloc(sizeof(double *)*N);
-    double ** Kfirstcentroids = (double **)malloc(sizeof(double *)*K);
-
+    Point ** data = (Point **)malloc(sizeof(Point*)*N);
+    Point ** Kfirstcentroids = (Point **)malloc(sizeof(Point*)*K);
     for (i=0; i < N; i++) {
-        data[i] = (double*)calloc(d, sizeof(double));
-        if(i<K)
-            Kfirstcentroids[i] = (double*)calloc(d, sizeof(double));
+        data[i] = (Point *)malloc(sizeof(Point));
+        data[i]->coordinates = (double*)calloc(d, sizeof(double));
+        data[i]->tag = i;
+        if(i<K){
+            Kfirstcentroids[i] = (Point *)malloc(sizeof(Point));
+            Kfirstcentroids[i]->coordinates = (double*)calloc(d, sizeof(double));
+            Kfirstcentroids[i]->tag = i;
+        }
         for (j=0; j < d; j++){
             dim0 = PyList_GetItem(dataList,i);
             dim1 = PyList_GetItem(dim0,j);
-            data[i][j] = PyFloat_AsDouble(dim1);
+            data[i]->coordinates[j] = PyFloat_AsDouble(dim1);
             if(i<K){
                 dim0 = PyList_GetItem(KfirstcentroidsList,i);
                 dim1 = PyList_GetItem(dim0,j);
-                Kfirstcentroids[i][j] = PyFloat_AsDouble(dim1);
+                Kfirstcentroids[i]->coordinates[j] = PyFloat_AsDouble(dim1);
             }
         }
     }
     /*Call the C Kmean algorithm from task 1 */
     clusters = Cmain(K, N, d, MAX_ITER, data, Kfirstcentroids);
+
+    /*Build a Python list from clusters */
+    Py_Clusters_List = PyList_New(N+K);
+    for (i=0; i<K; i++) {
+        for(j=0;j<=clusters[i]->idx;j++){
+            if(j<clusters[i]->idx){
+                item = Py_BuildValue("i",clusters[i]->points[j]->tag);
+                PyList_SetItem(Py_Clusters_List, count, item);
+            }else
+                PyList_SetItem(Py_Clusters_List, count, mark);
+            count++;
+        }
+    }
     for (i=0; i < N; i++) {
+        free(data[i]->coordinates);
         free(data[i]);
-        if(i<K)
+        if(i<K){
+            free(Kfirstcentroids[i]->coordinates);
             free(Kfirstcentroids[i]);
+            }
     }
     free(data);
     free(Kfirstcentroids);
-
-    /*Build a Python list from clusters */
-    Py_Clusters_List = PyList_New(K*d);
-    for (i=0; i<K; i++) {
-        for (j=0; j<d; j++) {
-          item = Py_BuildValue("d",clusters[i]->center[j]);
-          PyList_SetItem(Py_Clusters_List, i*d + j, item);
-      }
-    }
     for(i=0;i<K;i++)
     {
         free(clusters[i]->center);
@@ -163,10 +179,10 @@ PyInit_mykmeanssp(void)
 
 /* -- Methods -- */
 /*create a new cluster with a single point (for the first step of the algorithm). center is calculated as well*/
-Cluster* create_cluster(double* initial_point, int dim, int data_len){
+Cluster* create_cluster(Point * initial_point, int dim, int data_len){
     Cluster* c = malloc(sizeof(Cluster));
     c->center = (double*)calloc(dim, sizeof(double));
-    c->points = calloc(data_len, sizeof(double*));
+    c->points = (Point **)malloc(sizeof(Point*)*data_len);
     c->idx = 0;
     c->dim = dim;
     add_point_to_cluster(initial_point, c);
@@ -174,7 +190,7 @@ Cluster* create_cluster(double* initial_point, int dim, int data_len){
     return c;
 }
 
-void add_point_to_cluster(double* point, Cluster *c){
+void add_point_to_cluster(Point * point, Cluster *c){
     c -> points[c -> idx] = point;
     c -> idx++;
 }
@@ -186,7 +202,7 @@ void update_cluster_center(Cluster *c){
     for (i=0; i<c->dim; ++i){
         double new_val = 0;
         for (j=0; j<c->idx; ++j){
-            new_val += c->points[j][i];
+            new_val += c->points[j]->coordinates[i];
         }
         new_val = new_val/((double)c->idx);
         c->center[i] = new_val;
@@ -201,18 +217,18 @@ void clear_cluster(Cluster** c, int K){
 }
 
 /*calculate distance between a point and a cluster*/
-double find_dist_from_cluster(double* point, Cluster* cluster){
+double find_dist_from_cluster(Point * point, Cluster* cluster){
     double dist = 0;
     int i;
     for (i=0; i<cluster->dim; ++i){
-        double diff = (point[i] - cluster->center[i]);
+        double diff = (point->coordinates[i] - cluster->center[i]);
         dist += diff * diff;
     }
     return dist;
 }
 
 /*find the cluster with minimum distance from a given point. k is the number of clusters.*/
-Cluster* find_min_dist_cluster(Cluster** cluster_array, double* point, int k){
+Cluster* find_min_dist_cluster(Cluster** cluster_array, Point * point, int k){
     double min_dist = find_dist_from_cluster(point, cluster_array[0]);
     Cluster* min_cluster = cluster_array[0];
     int i;
@@ -228,7 +244,7 @@ Cluster* find_min_dist_cluster(Cluster** cluster_array, double* point, int k){
 
 /*assign each point to its closest cluster, and when all points are assigned, update the cluster centers
 data is a list of pointers to point arrays, point count is the number of points, k is the number of clusters*/
-void cluster_step(Cluster** clusters, double** data, int points_count, int k){
+void cluster_step(Cluster** clusters, Point ** data, int points_count, int k){
     int i, j;
     for (i=0; i<points_count; ++i){
         Cluster* min_c = find_min_dist_cluster(clusters, data[i], k);
@@ -239,7 +255,7 @@ void cluster_step(Cluster** clusters, double** data, int points_count, int k){
     }
 }
 
-Cluster ** firstKClusters(int d, int K, int N, double **data){
+Cluster ** firstKClusters(int d, int K, int N, Point **data){
     int i;
     Cluster **clusters=(Cluster **)malloc(sizeof(Cluster*)*K);
     for (i = 0; i<K; i++){
@@ -261,7 +277,7 @@ int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d) {
     for (i = 0; i < K; i++) {
         for (j = 0; j < d; j++) {
             temp = prev_centers[i][j] - clusters[i]->center[j];
-            if (temp > 0.001 || temp < -0.001)
+            if (temp > 0.0001 || temp < -0.0001)
                 return 0;
         }
     }

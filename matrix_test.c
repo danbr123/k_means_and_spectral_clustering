@@ -138,8 +138,11 @@ void MGS(Matrix A, Matrix* Q, Matrix* R){
             for (k=0; k<size; ++k) {
                 U.mat[k][j] = U.mat[k][j] - R->mat[i][j] * col_q[k];
             }
+            free (col_q);
+            free (col_u);
         }
     }
+    free_mat(U);
 }
 
 int main() {
@@ -148,19 +151,9 @@ int main() {
     Matrix mat1 = gen_mat(10,5, 1);
     Matrix mat2 = gen_mat(10,5, 1);
     Matrix mat3 = dot(mat1, mat2);
-    Matrix mat4 = empty_mat(4);
-    Matrix mat5 = empty_mat(4);
-    for (i=0; i<4; ++i){
-        for (j=0; j<4; ++j){
-            mat4.mat[i][j] = i+j;
-            mat5.mat[i][j] = i+2-j;
-        }
-    };
-    Matrix Q = empty_mat(4);
-    Matrix R = empty_mat(4);
+    Matrix mat4 = gen_mat(1000, 10, 1);
+    Matrix Q = empty_mat(1000);
+    Matrix R = empty_mat(1000);
     MGS(mat4, &Q, &R);
-    display(mat4);
-    display(Q);
-    display(R);
     return 0;
 }

@@ -17,11 +17,11 @@ NUPPER3 = 500
 
 
 def main():
-    K, N, d, r, r_n, MAX_ITER = initialize()
+    K, N, d, r, MAX_ITER = initialize()
     if K >= N:
         print("Error in data and/or parameters")
         return 0
-    dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d, random_state = r_n)
+    dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d, random_state = 1) #TODO replace 1 in random_state = 1 with None
     dataList = dataMatrix.tolist()
 
     # First is the Spectral-Clustering-Final-Project
@@ -45,12 +45,10 @@ def initialize():
     K = int(args.k)
     N = int(args.n)
     r = args.r
-    r_n = None
-    if r == "False":
-        r = False
-    else:
-        r_n = int(r)
+    if r == "True":
         r = True
+    else:
+        r = False
     d = 3  # random.randint(2, 3)
     MAX_ITER = 300
     if r:
@@ -60,6 +58,6 @@ def initialize():
         else:
             K = random.randint(KUPPER3 // 2, KUPPER3)
             N = random.randint(NUPPER3 // 2, NUPPER3)
-    return K, N, d, True, 1, MAX_ITER # K, N, d, r, r_n, MAX_ITER
+    return K, N, d, True, MAX_ITER # K, N, d, r, MAX_ITER
 
 main()

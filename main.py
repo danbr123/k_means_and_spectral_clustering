@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import random
 import mykmeanssp as alg
+import myspectralsp as alg2
 from sklearn.datasets import make_blobs
 from kmeans_init import k_means_pp
 from output import outputFile, graphic
@@ -32,6 +33,7 @@ def main():
     # Second is the K-means Algorithm
     Kfirstcentroids = k_means_pp(dataMatrix, K).tolist()
     Clusters_Kmeans = alg.Kmeans(K, N, d, MAX_ITER, dataList, Kfirstcentroids)
+    #alg2.Spectral()  #Kmeans_try(K, N, d, MAX_ITER, dataList, Kfirstcentroids)
 
     outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N)
     graphic(dataMatrix, y, N, K, d, Clusters_Spectral, Clusters_Kmeans)

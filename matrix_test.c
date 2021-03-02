@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
+
 typedef struct Matrix Matrix;
 
 struct Matrix{
@@ -114,13 +116,14 @@ double l2norm(double* vec, int size){
     return res;
 }
 
-void MGS(Matrix A, Matrix* Q, Matrix* R){
+
+void MGS(Matrix A, Matrix* Q, Matrix* R){ /* NOTE: Q,R are supplied in advance as pointers to empty matrices */
     int i,j,k;
     int size = A.size;
-    /* line 1 */
+    /* line 1 - V*/
     Matrix U = copy_mat(A);
-    /* line 2 */
-    for (i=0; i<U.size; ++i){
+    /* line 2 - V*/
+    for (i=0; i<size; ++i){
         /* line 3 */
         double* col = get_col(U,i);
         R->mat[i][i] = l2norm(col, size);
@@ -136,31 +139,32 @@ void MGS(Matrix A, Matrix* Q, Matrix* R){
             R->mat[i][j] = vec_mul(col_q, col_u, size);
             /* line 7 */
             for (k=0; k<size; ++k) {
-                U.mat[k][j] = U.mat[k][j] - R->mat[i][j] * col_q[k];
+                U.mat[k][j] = U.mat[k][j] - (R->mat[i][j] * col_q[k]);
             }
+            free (col_q);
+            free (col_u);
         }
     }
+    free_mat(U);
 }
 
 int main() {
+    /*tests*/
     int i = 0;
     int j = 0;
-    Matrix mat1 = gen_mat(10,5, 1);
-    Matrix mat2 = gen_mat(10,5, 1);
+    Matrix mat1 = gen_mat(4,5, 1);
+    Matrix mat2 = gen_mat(4,5, 1);
     Matrix mat3 = dot(mat1, mat2);
-    Matrix mat4 = empty_mat(4);
-    Matrix mat5 = empty_mat(4);
-    for (i=0; i<4; ++i){
-        for (j=0; j<4; ++j){
-            mat4.mat[i][j] = i+j;
-            mat5.mat[i][j] = i+2-j;
-        }
-    };
-    Matrix Q = empty_mat(4);
-    Matrix R = empty_mat(4);
+
+    Matrix mat4 = gen_mat(1000, 10, 1);
+    Matrix Q = empty_mat(1000);
+    Matrix R = empty_mat(1000);
+
+    clock_t begin = clock();
     MGS(mat4, &Q, &R);
-    display(mat4);
-    display(Q);
-    display(R);
+    clock_t end = clock();
+
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("%f", time_spent);
     return 0;
 }

@@ -4,9 +4,8 @@ EPSILON = 0.001
 def find_DDM2(mat):
     size = mat.shape[0]
     I = np.identity(size, dtype=np.float64)
-    D = np.ones_like(I)
     D_sum = mat.sum(axis = 1)
-    return 1/np.sqrt(D*D_sum) * I
+    return 1/np.sqrt(D_sum) * I
 
 
 def find_DDM(mat):
@@ -50,7 +49,7 @@ def QR_iter(mat):
     for i in range(size):
         Q,R = MGSA(A_bar)
         A_bar = np.dot(R,Q)
-        if (abs(np.linalg.det(Q_bar) - np.linalg.det(np.dot(Q_bar,Q))) <= EPSILON):
+        if np.amax(abs(Q_bar - np.dot(Q_bar,Q))) <=EPSILON:
             return A_bar, Q_bar
         Q_bar = np.dot(Q_bar,Q)
     return A_bar, Q_bar

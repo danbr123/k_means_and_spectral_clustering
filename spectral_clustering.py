@@ -55,13 +55,15 @@ def find_t(vec_mat, k):
     return T
 
 
-def spectral_clustering(data):
+def spectral_clustering(data,k):
+    K = k
     W = array_to_adj_mat2(data)
     Ln = find_lnorm(W)
     A, Q = mt.QR_iter(Ln)
-    k = calc_k(A)
-    T = find_t(Q,k).T
-    return T, k
+    if k == 0:
+        K = calc_k(A)
+    T = find_t(Q,K)
+    return T, K
 
 # TESTS ###################################################################
 # dataMatrix, y = make_blobs(n_samples=3, centers=1, n_features=3, random_state = None)

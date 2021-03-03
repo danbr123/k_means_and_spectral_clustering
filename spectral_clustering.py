@@ -1,11 +1,24 @@
 import numpy as np
 import matrix_tools as mt
 EPSILON = 0.0001
+from sklearn.datasets import make_blobs
+import time
 
+
+def array_to_adj_mat2(array):
+    arr_size = array.shape[0]
+    W = np.empty(shape=(arr_size, arr_size), dtype=np.float64)
+    for i in range(arr_size):
+        arr1 = np.zeros_like(array) + array[i]
+        arr2 = (arr1 - array)**2
+        arr3 = arr2.sum(axis = 1)
+        arr4 = np.exp(-arr3/2.)
+        W[i] = arr4
+    return W
 
 def array_to_adj_mat(array):
     arr_size = array.shape[0]
-    W = np.empty(shape=(arr_size, arr_size), dtype=np.float16)
+    W = np.empty(shape=(arr_size, arr_size), dtype=np.float64)
     # TODO: currently implemented with loops - change it to calculate for the entire matrix
     for i in range(arr_size):
         for j in range(arr_size):
@@ -16,7 +29,7 @@ def find_lnorm(array):
     return mt.find_NGL(array_to_adj_mat(array))
 
 def calc_weight(p1, p2):
-    w = np.exp(-mt.eucledian_norm(p1-p2)/2)
+    w = np.exp(-mt.eucledian_norm(p1-p2)**2/2)
     return w if w > EPSILON else 0
 
 
@@ -33,55 +46,35 @@ def calc_k(eigenval_mat):
     return k
 
 
+def find_t(vec_mat, k):
+    size = vec_mat.shape[0]
+    T = np.zeros(shape=(size, k))
+    for i in range(size):
+        norm_sum = np.sqrt((np.sum(vec_mat[i][0:k]**2)))
+        T[i] = vec_mat[i][0:k]/norm_sum
+    return T
+
+
+def spectral_clustering(data):
+    W = array_to_adj_mat2(data)
+    Ln = find_lnorm(W)
+    A, Q = mt.QR_iter(Ln)
+    k = calc_k(A)
+    T = find_t(Q,k).T
+    return T, k
+
 # TESTS ###################################################################
+dataMatrix, y = make_blobs(n_samples=1000, centers=5, n_features=3, random_state = 0)
 
-arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float16)
-arr2 = np.array([[ 0.55794805, -0.25573179, -0.30606806],[-0.25573179,  0.53705136, -0.26732382],
-                [-0.30606806, -0.26732382,  0.5636308]], dtype=np.float16)
-
-W = array_to_adj_mat(arr)
-print(W)
-print("___")
-ln = find_lnorm(W)
-print("____")
-Q,R = mt.QR_iter(ln)
-print(Q)
-print(R)
-eval, evec = np.linalg.eig(ln)
-print(np.dot(evec[0], evec[2]))
-print(np.dot(Q[0],Q[1]))
-print("________________")
-print("ln")
-Qg, Rg = mt.MGSA(ln)
-print("arr2")
-Qg2, Rg2 = mt.MGSA(arr2)
-print("test")
-print (Qg-Qg2)
-print (Rg-Rg2)
-print(Qg[0]@Qg[2])
-print(Qg@Qg.T)
-
-
-
-
-#arr = np.random.rand(500, 3)
-#res = np.random.rand(1000, 1000)
-
-# res = array_to_adj_mat(arr)
-# res = find_lnorm(res)
-# print("___")
-# print(res)
-# print("___")
-# Q,R = mt.QR_iter(res)
-# print(Q)
-# print("___")
-# print(R)
-# print("___")
-# print(calc_k(R))
-# print (np.linalg.eig(res))
+arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
+# arr2 = np.array([[ 0.55794805, -0.25573179, -0.30606806],[-0.25573179,  0.53705136, -0.26732382],
+#                 [-0.30606806, -0.26732382,  0.5636308]], dtype=np.float64)
 #
-# print("_____")
-# print (Q,R)
-# print("_____")
-# print(np.dot(np.transpose(Q),Q))
-# print("_____")
+# print(arr)
+#
+start = time.time()
+# # W = array_to_adj_mat(arr)
+res = spectral_clustering(arr)
+end = time.time()
+print(end - start)
+print(res)

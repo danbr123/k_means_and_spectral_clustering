@@ -1,23 +1,34 @@
 import numpy as np
 import copy
 EPSILON = 0.001
+def find_DDM2(mat):
+    size = mat.shape[0]
+    I = np.identity(size, dtype=np.float64)
+    D = np.ones_like(I)
+    D_sum = mat.sum(axis = 1)
+    return 1/np.sqrt(D*D_sum) * I
+
 
 def find_DDM(mat):
     size = mat.shape[0]
-    D = np.zeros(shape=(size, size), dtype=np.float16)
+    D = np.zeros(shape=(size, size), dtype=np.float64)
     D_sq = np.zeros_like(D)
     for i in range(size):
         D[i][i] = np.sum(mat[i])
         D_sq[i][i] = 1/np.sqrt(D[i][i]) # TODO: add exception
     return D, D_sq
 
+def find_NGL2(mat):
+    size = mat.shape[0]
+    D_sq = find_DDM2(mat)
+    L_norm = np.identity(size, dtype=np.float64) - np.dot(np.dot(D_sq, mat),D_sq)
+    return np.round(L_norm, 5)
 
 def find_NGL(mat):
     size = mat.shape[0]
     D_sq = find_DDM(mat)[1]
-    L_norm = np.identity(size) - np.dot(np.dot(D_sq, mat),D_sq)
-    return L_norm
-
+    L_norm = np.identity(size, dtype=np.float64) - np.dot(np.dot(D_sq, mat),D_sq)
+    return np.round(L_norm, 5)
 
 def MGSA(mat):  # Modified Gram-Schmidt Algorithm
     size = mat.shape[0]
@@ -27,8 +38,6 @@ def MGSA(mat):  # Modified Gram-Schmidt Algorithm
     for i in range(size):
         R[i][i] = eucledian_norm(U[:,i])
         Q[:,i] = U[:,i]/R[i][i]
-        print("U[i]:",U[:,i])
-        print("R[i][i]:", R[i][i])
         for j in range(i+1, size):
             R[i][j] = np.dot(Q[:,i], U[:,j])
             U[:,j] = U[:,j] - R[i][j]*Q[:,i]
@@ -37,7 +46,7 @@ def MGSA(mat):  # Modified Gram-Schmidt Algorithm
 def QR_iter(mat):
     size = mat.shape[0]
     A_bar = copy.deepcopy(mat)
-    Q_bar = np.identity(size)
+    Q_bar = np.identity(size, dtype=np.float64)
     for i in range(size):
         Q,R = MGSA(A_bar)
         A_bar = np.dot(R,Q)
@@ -55,7 +64,8 @@ def calc_det(mat): # TODO: finish
 
 
 def eucledian_norm(arr):
-    return np.linalg.norm(arr, ord=2)  # TODO: write the formula instead
+    # return np.linalg.norm(arr, ord=2)  # TODO: write the formula instead
+    return np.sqrt(np.sum(arr**2))
 
 
 

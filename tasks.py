@@ -6,7 +6,6 @@ def delete(c):
 
 @task(delete)
 def run(c,k,n,Random = True):
-    print(k,n,Random)
     c.run("python3.7 setup.py build_ext --inplace")
     try:
         K = int(k)
@@ -14,15 +13,7 @@ def run(c,k,n,Random = True):
     except ValueError:
         print("Error in parameters provided")
         return 0
-    try:
-        r = int(Random)
-    except ValueError:
-        if(Random!="False"):
-            print("Error in parameters provided")
-            return 0
-        r = False
-
-    c.run("python3.7 main.py "+str(K)+" "+str(N)+" "+str(r))
+    c.run("python3.7 main.py "+str(K)+" "+str(N)+" "+str(Random))
 
     #c.run("python3.8.5 setup.py build_ext --inplace")
 

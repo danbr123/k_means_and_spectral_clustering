@@ -60,10 +60,8 @@ def spectral_clustering(data):
     Ln = find_lnorm(W)
     A, Q = mt.QR_iter(Ln)
     k = calc_k(A)
-    T = find_t(Q,k)
-    # TODO - call normal kmeans from here with T as the data
-    #temporary:
-    return T
+    T = find_t(Q,k).T
+    return T, k
 
 # TESTS ###################################################################
 dataMatrix, y = make_blobs(n_samples=1000, centers=5, n_features=3, random_state = 0)

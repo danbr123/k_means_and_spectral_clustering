@@ -6,9 +6,8 @@ EPSILON = 0.001
 def find_DDM2(mat):
     size = mat.shape[0]
     I = np.identity(size, dtype=np.float64)
-    D = np.ones_like(I)
     D_sum = mat.sum(axis = 1)
-    return 1/np.sqrt(D*D_sum) * I
+    return 1/np.sqrt(D_sum) * I
 
 
 def find_DDM(mat):

@@ -3,33 +3,33 @@ import matrix_tools as mt
 EPSILON = 0.0001
 from sklearn.datasets import make_blobs
 import time
+from scipy.sparse import csgraph
 
-
-def array_to_adj_mat2(array):
-    arr_size = array.shape[0]
+def array_to_adj_mat2(arr):
+    arr_size = arr.shape[0]
     W = np.empty(shape=(arr_size, arr_size), dtype=np.float64)
     for i in range(arr_size):
-        arr1 = np.zeros_like(array) + array[i]
-        arr2 = (arr1 - array)**2
-        arr3 = arr2.sum(axis = 1)
+        arr1 = np.zeros_like(arr, dtype=np.float64) + arr[i]
+        arr2 = (arr1 - arr)**2
+        arr3 = np.sqrt(arr2.sum(axis = 1))
         arr4 = np.exp(-arr3/2.)
         W[i] = arr4
-    return W
+    return np.round(W, 5)
 
-def array_to_adj_mat(array):
-    arr_size = array.shape[0]
+def array_to_adj_mat(arr):
+    arr_size = arr.shape[0]
     W = np.empty(shape=(arr_size, arr_size), dtype=np.float64)
     # TODO: currently implemented with loops - change it to calculate for the entire matrix
     for i in range(arr_size):
         for j in range(arr_size):
-            W[i][j] = calc_weight(array[i],array[j])
+            W[i][j] = calc_weight(arr[i],arr[j])
     return W
 
-def find_lnorm(array):
-    return mt.find_NGL(array_to_adj_mat(array))
+def find_lnorm(arr):
+    return mt.find_NGL2(arr)
 
 def calc_weight(p1, p2):
-    w = np.exp(-mt.eucledian_norm(p1-p2)**2/2)
+    w = np.exp(-mt.eucledian_norm(p1-p2)/2)
     return w if w > EPSILON else 0
 
 

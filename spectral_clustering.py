@@ -37,14 +37,13 @@ def calc_k(eigenval_mat):
     size = eigenval_mat.shape[0]
     max = 0
     k = 0
-    vec_idx = np.argsort(np.diag(eigenval_mat))  # array of the original idx of the sorted eigenvals
     eigvals = np.sort(np.diag(eigenval_mat))
     for i in range(1, int(size/2) + 1):
         eigendiff = abs(eigvals[i] - eigvals[i-1])
         if max < eigendiff:
             max = eigendiff
             k = i
-    return k, vec_idx[0:k]
+    return k
 
 
 def find_t(vec_mat, k, vec_idx_arr):
@@ -59,42 +58,37 @@ def find_t(vec_mat, k, vec_idx_arr):
 def spectral_clustering(data,K):
     start = time.time()
     W = array_to_adj_mat2(data)
-
     end = time.time()
     print("W:",end - start)
+
     start = time.time()
-
     Ln = find_lnorm(W)
-
     end = time.time()
     print("Ln:",end - start)
+
     start = time.time()
-
     A, Q = mt.QR_iter(Ln)
-
     end = time.time()
     print("AQ:",end - start)
+
     start = time.time()
-    
-    k, vec_idx = calc_k(A)
-    
+    k = K
+    if K==0:
+        k = calc_k(A)
     end = time.time()
     print("k:",end - start)
-    
-    start = time.time()
-    
-    T = find_t(Q, K, vec_idx)
 
+    vec_idx = np.argsort(np.diag(A))[0:k]  # array of the original idx of the sorted eigenvals
+
+    start = time.time()
+    T = find_t(Q, k, vec_idx)
     end = time.time()
     print("T:",end - start)
-    return T
+    return T, k
 
 # TESTS ###################################################################
-dataMatrix, y = make_blobs(n_samples=100, centers=5, n_features=3, random_state = 0)
-    if k == 0:
-        K = calc_k(A)
-    T = find_t(Q,K)
-    return T, K
+dataMatrix, y = make_blobs(n_samples=30, centers=5, n_features=3, random_state = None)
+
 
 
 #arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
@@ -109,4 +103,5 @@ start = time.time()
 res ,k= spectral_clustering(arr,0)
 end = time.time()
 print(end - start)
+print (res)
 

@@ -8,7 +8,7 @@ import mykmeanssp as alg
 from sklearn.datasets import make_blobs
 from kmeans_init import k_means_pp
 from output import outputFile, graphic
-
+from spectral_clustering import spectral_clustering
 
 KUPPER2 = 10
 KUPPER3 = 5
@@ -25,9 +25,12 @@ def main():
     dataList = dataMatrix.tolist()
 
     # First is the Spectral-Clustering-Final-Project
-
-    Kfirstcentroids = k_means_pp(dataMatrix, K).tolist()
-    Clusters_Spectral = alg.Kmeans(K, N, d, MAX_ITER, dataList, Kfirstcentroids)
+    if r:
+        K = 0
+    T, K = spectral_clustering(dataMatrix,K)
+    Kfirstcentroids = k_means_pp(T, K).tolist()
+    TList = T.tolist()
+    Clusters_Spectral = alg.Kmeans(K, N, K, MAX_ITER, TList, Kfirstcentroids)
 
     # Second is the K-means Algorithm
     Kfirstcentroids = k_means_pp(dataMatrix, K).tolist()
@@ -58,6 +61,6 @@ def initialize():
         else:
             K = random.randint(KUPPER3 // 2, KUPPER3)
             N = random.randint(NUPPER3 // 2, NUPPER3)
-    return K, N, d, True, MAX_ITER # K, N, d, r, MAX_ITER
+    return K, N, d, False, MAX_ITER # K, N, d, r, MAX_ITER
 
 main()

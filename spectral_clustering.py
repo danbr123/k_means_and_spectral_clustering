@@ -56,9 +56,8 @@ def find_t(vec_mat, k, vec_idx_arr):
     return T
 
 
-def spectral_clustering(data):
+def spectral_clustering(data,K):
     start = time.time()
-
     W = array_to_adj_mat2(data)
 
     end = time.time()
@@ -76,14 +75,15 @@ def spectral_clustering(data):
     end = time.time()
     print("AQ:",end - start)
     start = time.time()
-
+    
     k, vec_idx = calc_k(A)
-
+    
     end = time.time()
     print("k:",end - start)
+    
     start = time.time()
-
-    T = find_t(Q, k, vec_idx)
+    
+    T = find_t(Q, K, vec_idx)
 
     end = time.time()
     print("T:",end - start)
@@ -91,6 +91,11 @@ def spectral_clustering(data):
 
 # TESTS ###################################################################
 dataMatrix, y = make_blobs(n_samples=100, centers=5, n_features=3, random_state = 0)
+    if k == 0:
+        K = calc_k(A)
+    T = find_t(Q,K)
+    return T, K
+
 
 #arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
 arr = dataMatrix
@@ -101,6 +106,7 @@ arr = dataMatrix
 #
 start = time.time()
 # # W = array_to_adj_mat(arr)
-res = spectral_clustering(arr)
+res ,k= spectral_clustering(arr,0)
 end = time.time()
 print(end - start)
+

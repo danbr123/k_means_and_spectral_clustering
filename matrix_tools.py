@@ -1,6 +1,8 @@
 import numpy as np
 import copy
 EPSILON = 0.001
+
+
 def find_DDM2(mat):
     size = mat.shape[0]
     I = np.identity(size, dtype=np.float64)
@@ -17,11 +19,13 @@ def find_DDM(mat):
         D_sq[i][i] = 1/np.sqrt(D[i][i]) # TODO: add exception
     return D, D_sq
 
+
 def find_NGL2(mat):
     size = mat.shape[0]
     D_sq = find_DDM2(mat)
     L_norm = np.identity(size, dtype=np.float64) - np.dot(np.dot(D_sq, mat),D_sq)
     return np.round(L_norm, 5)
+
 
 def find_NGL(mat):
     size = mat.shape[0]
@@ -29,6 +33,7 @@ def find_NGL(mat):
     L_norm = np.identity(size, dtype=np.float64) - np.dot(np.dot(D_sq, mat),D_sq)
     return np.round(L_norm, 5)
 
+  
 def MGSA(mat):  # Modified Gram-Schmidt Algorithm
     size = mat.shape[0]
     U = copy.deepcopy(mat)
@@ -49,17 +54,10 @@ def QR_iter(mat):
     for i in range(size):
         Q,R = MGSA(A_bar)
         A_bar = np.dot(R,Q)
-        if np.amax(abs(Q_bar - np.dot(Q_bar,Q))) <=EPSILON:
+        if (np.amax(abs(Q_bar - np.dot(Q_bar,Q))) <= EPSILON):
             return A_bar, Q_bar
         Q_bar = np.dot(Q_bar,Q)
     return A_bar, Q_bar
-
-
-def calc_det(mat): # TODO: finish
-    size = mat.shape[0]
-    if (size == 2):
-        return mat[0][0]*mat[1][1] - mat[1][0]*mat[0][1]
-
 
 
 def eucledian_norm(arr):

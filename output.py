@@ -53,6 +53,8 @@ def visualization2d(dataMatrix,K,lst,str):
 def visualization3d(dataMatrix,K,lst,str):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
+    # print(K) # TODO: for some K and N there could be a cluster without points which in turn will lead to IndexError in the loop over i
+    # print(lst)
     for i in range(K):
         newMatrix = dataMatrix[lst[i]].T
         x_axes = newMatrix[0]

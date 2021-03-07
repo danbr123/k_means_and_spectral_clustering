@@ -87,21 +87,21 @@ def spectral_clustering(data,K):
     return T, k
 
 # TESTS ###################################################################
-dataMatrix, y = make_blobs(n_samples=30, centers=5, n_features=3, random_state = None)
-
-
-
-#arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
-arr = dataMatrix
-# arr2 = np.array([[ 0.55794805, -0.25573179, -0.30606806],[-0.25573179,  0.53705136, -0.26732382],
-#                 [-0.30606806, -0.26732382,  0.5636308]], dtype=np.float64)
+# dataMatrix, y = make_blobs(n_samples=30, centers=5, n_features=3, random_state = None)
 #
-# print(arr)
 #
-start = time.time()
-# # W = array_to_adj_mat(arr)
-res ,k= spectral_clustering(arr,0)
-end = time.time()
-print(end - start)
-print (res)
+#
+# #arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
+# arr = dataMatrix
+# # arr2 = np.array([[ 0.55794805, -0.25573179, -0.30606806],[-0.25573179,  0.53705136, -0.26732382],
+# #                 [-0.30606806, -0.26732382,  0.5636308]], dtype=np.float64)
+# #
+# # print(arr)
+# #
+# start = time.time()
+# # # W = array_to_adj_mat(arr)
+# res ,k= spectral_clustering(arr,0)
+# end = time.time()
+# print(end - start)
+# print (res)
 

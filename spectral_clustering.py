@@ -66,9 +66,15 @@ def spectral_clustering(data,k):
     return T, K
 
 # TESTS ###################################################################
-# dataMatrix, y = make_blobs(n_samples=3, centers=1, n_features=3, random_state = None)
+dataMatrix, y = make_blobs(n_samples=10, centers=1, n_features=3, random_state = None)
 #
-# arr = np.array([[-2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
+arr = np.array([[-2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
+arr2 = np.array([np.diag([1,4,5,6,7,8])])
+arr3 = np.array([[0,1],[2,3]], dtype=np.float64)
+
+
+
+
 # arr2 = np.array([[-2,1],[2,3]], dtype=np.float64)
 
 # arr2 = np.array([[ 0.55794805, -0.25573179, -0.30606806],[-0.25573179,  0.53705136, -0.26732382],
@@ -76,12 +82,13 @@ def spectral_clustering(data,k):
 #
 # print(arr)
 #
-# arr = dataMatrix
-# start = time.time()
+arr = dataMatrix
+start = time.time()
 # # W = array_to_adj_mat(arr)
-# res = spectral_clustering(arr)
-# end = time.time()
-# print(end - start)
+res ,k= spectral_clustering(arr,0)
+print(k)
+end = time.time()
+print(end - start)
 # print(res)
 # W = array_to_adj_mat(arr)
 # W2 = array_to_adj_mat2(arr2)
@@ -103,3 +110,8 @@ def spectral_clustering(data,k):
 # # print(A)
 # Ln3 = csgraph.laplacian(W2, normed=True)
 # print()
+k=1
+for i in range(10):
+    dataMatrix, y = make_blobs(n_samples=30, centers=10, n_features=3, random_state = None)
+    res ,k= spectral_clustering(dataMatrix,0)
+    print(k)

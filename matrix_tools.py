@@ -32,8 +32,8 @@ def find_NGL(mat):
 def MGSA(mat):  # Modified Gram-Schmidt Algorithm
     size = mat.shape[0]
     U = copy.deepcopy(mat)
-    R = np.zeros_like(mat)
-    Q = np.zeros_like(mat)
+    R = np.zeros_like(mat, dtype = np.float64)
+    Q = np.zeros_like(mat, dtype = np.float64)
     for i in range(size):
         R[i][i] = eucledian_norm(U[:,i])
         Q[:,i] = U[:,i]/R[i][i]
@@ -63,7 +63,7 @@ def calc_det(mat): # TODO: finish
 
 
 def eucledian_norm(arr):
-    # return np.linalg.norm(arr, ord=2)  # TODO: write the formula instead
+    #return np.linalg.norm(arr, ord=2)  # TODO: write the formula instead
     return np.sqrt(np.sum(arr**2))
 
 

@@ -61,7 +61,6 @@ def QR_iter(mat):
 
 
 def eucledian_norm(arr):
-    #return np.linalg.norm(arr, ord=2)  # TODO: write the formula instead
     return np.sqrt(np.sum(arr**2))
 
 

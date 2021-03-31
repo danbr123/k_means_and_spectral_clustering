@@ -21,7 +21,7 @@ def main():
     if K >= N:
         print("Error in data and/or parameters")
         return 0
-    dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d, random_state = None) #TODO replace 1 in random_state = 1 with None
+    dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d, random_state = 4) #TODO replace 1 in random_state = 1 with None
     dataList = dataMatrix.tolist()
 
     # First is the Spectral-Clustering-Final-Project

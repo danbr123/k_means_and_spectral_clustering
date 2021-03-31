@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import random
 import mykmeanssp as alg
+import myspectralsp as alg2
 from sklearn.datasets import make_blobs
 from kmeans_init import k_means_pp
 from output import outputFile, graphic
@@ -21,10 +22,11 @@ def main():
     if K >= N:
         print("Error in data and/or parameters")
         return 0
-    dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d, random_state = 3) #TODO replace 1 in random_state = 1 with None
+    dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d, random_state = 4) #TODO replace 1 in random_state = 1 with None
     dataList = dataMatrix.tolist()
 
     # First is the Spectral-Clustering-Final-Project
+    r = True #TODO delete this line
     if r:
         K = 0
     T, K = spectral_clustering(dataMatrix,K)
@@ -35,6 +37,7 @@ def main():
     # Second is the K-means Algorithm
     Kfirstcentroids = k_means_pp(dataMatrix, K).tolist()
     Clusters_Kmeans = alg.Kmeans(K, N, d, MAX_ITER, dataList, Kfirstcentroids)
+    #alg2.Spectral()  #Kmeans_try(K, N, d, MAX_ITER, dataList, Kfirstcentroids)
 
     outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N)
     graphic(dataMatrix, y, N, K, d, Clusters_Spectral, Clusters_Kmeans)
@@ -52,7 +55,7 @@ def initialize():
         r = True
     else:
         r = False
-    d = 3  # random.randint(2, 3)
+    d = 3  # random.randint(2, 3) Todo: remove #
     MAX_ITER = 300
     if r:
         if d == 2:

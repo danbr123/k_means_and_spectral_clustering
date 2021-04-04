@@ -16,43 +16,43 @@ def outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N):
     dataFile.close()
 
 
-def graphic(dataMatrix, y, N, K, d, Clusters_Spectral, Clusters_Kmeans):
+def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
     # Set up a figure and grid partition
     fig = plt.figure(figsize=(11, 8))
     gs = GridSpec(2, 2, figure=fig)
 
-    lst_Spectral = RowIdxList(K, Clusters_Spectral)
-    lst_Kmeans = RowIdxList(K, Clusters_Kmeans)
+    lst_Spectral = RowIdxList(new_K, Clusters_Spectral)
+    lst_Kmeans = RowIdxList(new_K, Clusters_Kmeans)
     if d == 2:
         # add subplots
         ax1 = fig.add_subplot(gs[0, 1])
         ax2 = fig.add_subplot(gs[0, 0])
 
-        visualization2d(ax1, dataMatrix, K, lst_Spectral, "Normalized Spectral Clustering")
-        visualization2d(ax2, dataMatrix, K, lst_Kmeans, "K-means")
+        visualization2d(ax1, dataMatrix, new_K, lst_Spectral, "Normalized Spectral Clustering")
+        visualization2d(ax2, dataMatrix, new_K, lst_Kmeans, "K-means")
     else:
         # add subplots
         ax1 = fig.add_subplot(gs[0, 1], projection='3d')
         ax2 = fig.add_subplot(gs[0, 0], projection='3d')
 
-        visualization3d(ax1, dataMatrix, K, lst_Spectral, "Normalized Spectral Clustering")
-        visualization3d(ax2, dataMatrix, K, lst_Kmeans, "K-means")
+        visualization3d(ax1, dataMatrix, new_K, lst_Spectral, "Normalized Spectral Clustering")
+        visualization3d(ax2, dataMatrix, new_K, lst_Kmeans, "K-means")
 
     # # calculating the Jaccard-Measure
-    jm_spectral = JaccardMeasure(y, lst_Spectral, N, K)
-    jm_kmeans = JaccardMeasure(y, lst_Kmeans, N, K)
+    jm_spectral = JaccardMeasure(y, lst_Spectral, N, new_K)
+    jm_kmeans = JaccardMeasure(y, lst_Kmeans, N, new_K)
 
     # add last subplot for text
     ax3 = fig.add_subplot(gs[1, :])
     ax3.set_axis_off()  # make plot invisible
-    summarize(ax3, N, K, d, jm_spectral, jm_kmeans)
+    summarize(ax3, N, K, new_K, d, jm_spectral, jm_kmeans)
     fig.tight_layout()
 
     # creating the PDF
     pp = PdfPages('clusters.pdf')
     pp.savefig(fig)
     pp.close()
-    plt.show()
+    # plt.show()
 
 
 def visualization2d(ax, dataMatrix, K, lst, alg_name):
@@ -109,11 +109,11 @@ def RowIdxList(K, Clusters_List):
         lst.append(rowidx)
     return lst
 
-def summarize(ax, N, K, d, jm_spectral, jm_kmeans):
+def summarize(ax, N, K, new_K, d, jm_spectral, jm_kmeans):
     # fig = plt.figure()
     report = "Data was generated from the values:\n""n = " + str(N) + " , " + "k = " + str(
         K) + "\n""The k that was used for both algorithms was " + str(
-        K) + "\n""The Jaccard measure for Spectral Clustring: " + str(jm_spectral)[
+        new_K) + "\n""The Jaccard measure for Spectral Clustring: " + str(jm_spectral)[
                                                                   0:6] + "\n""The Jaccard measure for K-means: " + str(
         jm_kmeans)[0:6]
     if d == 3:

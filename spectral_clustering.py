@@ -26,18 +26,19 @@ def array_to_adj_mat(arr):
     return W
 
 def find_lnorm(arr):
-    return mt.find_NGL2(arr)
+    return mt.find_NGL2(arr)  + np.identity(arr.shape[0]) #TODO: decide if to remove the identity matrix
 
 def calc_weight(p1, p2):
     w = np.exp(-mt.eucledian_norm(p1-p2)/2)
     return w if w > EPSILON else 0
 
 
-def calc_k(eigenval_mat):
+def calc_k(eigenval_mat,Ln):
     size = eigenval_mat.shape[0]
     max = 0
     k = 0
     eigvals = np.sort(np.diag(eigenval_mat))
+    # print(np.sum(eigvals-np.sort(np.linalg.eigvals(Ln))))
     for i in range(1, int(size/2) + 1):
         eigendiff = abs(eigvals[i] - eigvals[i-1])
         if max < eigendiff:
@@ -55,7 +56,7 @@ def find_t(vec_mat, k, vec_idx_arr):
     return T
 
 
-def spectral_clustering(data,K):
+def spectral_clustering(data,r,K):
     start = time.time()
     W = array_to_adj_mat2(data)
     end = time.time()
@@ -68,16 +69,17 @@ def spectral_clustering(data,K):
 
     start = time.time()
     A, Q = mt.QR_iter(Ln)
+
     end = time.time()
     print("AQ:",end - start)
 
     start = time.time()
     k = K
-    if K==0:
-        k = calc_k(A)
+    if r:
+        k = calc_k(A,Ln)
+        print(k)
     end = time.time()
     print("k:",end - start)
-
     vec_idx = np.argsort(np.diag(A))[0:k]  # array of the original idx of the sorted eigenvals
 
     start = time.time()
@@ -91,7 +93,7 @@ def spectral_clustering(data,K):
 #
 #
 #
-# #arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
+# arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
 # arr = dataMatrix
 # # arr2 = np.array([[ 0.55794805, -0.25573179, -0.30606806],[-0.25573179,  0.53705136, -0.26732382],
 # #                 [-0.30606806, -0.26732382,  0.5636308]], dtype=np.float64)
@@ -104,4 +106,14 @@ def spectral_clustering(data,K):
 # end = time.time()
 # print(end - start)
 # print (res)
-
+# print(arr)
+# print(arr[:,0])
+#
+# arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
+#
+# Q,R = mt.MGSA(arr)
+# print(Q)
+# print(R)
+# Q2,R2 = mt.MGSA2(arr)
+# print(Q2)
+# print(R2)

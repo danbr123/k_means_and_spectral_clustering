@@ -16,6 +16,7 @@ def k_means_pp(data, k):
         probability_array = update_prob_array(di_array)
         centroid_idx = np.random.choice(n, p=probability_array)
         centroids_array[i] = data[centroid_idx]
+        centroids_cnt += 1
 
     return centroids_array
 

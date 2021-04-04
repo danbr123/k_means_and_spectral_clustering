@@ -12,7 +12,7 @@ setup(
     ext_modules=[
         Extension(
             'mykmeanssp',
-            ['kmeans++.c'],
+            ['kmeans.c'],
         ),
     ]
 )

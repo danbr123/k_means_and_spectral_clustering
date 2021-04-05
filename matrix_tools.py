@@ -26,7 +26,6 @@ def find_NGL2(mat):
     D_sq = find_DDM2(mat)
     L_norm = np.identity(size, dtype=np.float64) - np.dot(np.dot(D_sq, mat), D_sq)
     arr_round = np.array(0.001 < abs(L_norm)) * 1.
-    # print(L_norm * arr_round)
     return L_norm * arr_round
 
 
@@ -50,28 +49,20 @@ def MGSA2(mat):  # Modified Gram-Schmidt Algorithm
         R[i] = np.dot(Q[:, i], U) * T[i, :]
         U = U - ((Q[:, i].reshape(mat.shape[0],1) * R[i]) * On)
         On[i] = 0
-        # for j in range(i + 1, size):
-            # R[i][j] = np.dot(Q[:,i], U[:,j])
-            # U[:, j] = U[:, j] - R[i][j] * Q[:, i]
     return Q, R
 
 
 def MGSA(mat):  # Modified Gram-Schmidt Algorithm
     size = mat.shape[0]
-    # T = np.triu(np.ones(shape=(size,size)),0)
     U = copy.deepcopy(mat)
-    # W = copy.deepcopy(mat)
     R = np.zeros_like(mat, dtype=np.float64)
     Q = np.zeros_like(mat, dtype=np.float64)
     for i in range(size):
         R[i][i] = eucledian_norm(U[:, i])
         Q[:, i] = U[:, i] / R[i][i]
-        # W[i] = np.dot(Q[:, i], U) * T[:,i]
         for j in range(i + 1, size):
             R[i][j] = np.dot(Q[:, i].T, U[:, j])
             U[:, j] = U[:, j] - R[i][j] * Q[:, i]
-            # W[:, j] = W[:, j] - R[i][j] * Q[:, i]
-    # print(W-U)
     return Q, R
 
 

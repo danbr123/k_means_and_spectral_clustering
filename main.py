@@ -11,8 +11,9 @@ from kmeans_init import k_means_pp
 from output import outputFile, graphic
 from spectral_clustering import spectral_clustering
 
-UPPER2 = 1000 #on Nova - 390 - 395, on Mac 460
-UPPER3 = 500 #on Nova - 395 - 400, on Mac 460
+KUPPER = 100
+MAX_CAPACITY2 = 400 #on Nova - 390 - 395, on Mac 460
+MAX_CAPACITY3 = 400 #on Nova - 395 - 400, on Mac 460
 
 
 def main():
@@ -26,8 +27,9 @@ def main():
     dataList = dataMatrix.tolist()
 
     # First is the Spectral-Clustering-Final-Project
-    r = True  # TODO delete this line
+    # r = True  # TODO delete this line
     T, new_K = spectral_clustering(dataMatrix, r, K)
+    # print(dataMatrix.dtype)
     Kfirstcentroids = k_means_pp(T, new_K).tolist()
     TList = T.tolist()
     Clusters_Spectral = alg.Kmeans(new_K, N, new_K, MAX_ITER, TList,
@@ -37,7 +39,7 @@ def main():
     Kfirstcentroids = k_means_pp(dataMatrix, new_K).tolist()
     Clusters_Kmeans = alg.Kmeans(new_K, N, d, MAX_ITER, dataList, Kfirstcentroids)
 
-    outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N)
+    outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, new_K, N) #TODO check if new_K or K
     graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans)
     end = time.time()
     print("All:",end - start)
@@ -55,15 +57,15 @@ def initialize():
         r = True
     else:
         r = False
-    d = 2  # random.randint(2, 3) Todo: remove #
+    d = 3 # random.randint(2, 3) Todo: remove #
     MAX_ITER = 300
     if r:
         if d == 2:
-            K = random.randint((UPPER2-1) // 2, UPPER2-1)
-            N = random.randint(K + 1, UPPER2)  # TODO: #N = random.randint(NUPPER2 // 2, NUPPER2)
+            K = random.randint(KUPPER // 2, KUPPER)
+            N = random.randint(K + 1, MAX_CAPACITY2)  # TODO: #N = random.randint(NUPPER2 // 2, NUPPER2)
         else:
-            K = random.randint((UPPER3-1) // 2, UPPER3-1)
-            N = random.randint(K + 1, UPPER3)  # TODO: #N = random.randint(NUPPER3 // 2, NUPPER3)
+            K = random.randint(KUPPER // 2, KUPPER)
+            N = random.randint(K + 1, MAX_CAPACITY3)  # TODO: #N = random.randint(NUPPER3 // 2, NUPPER3)
     return K, N, d, r, MAX_ITER
 
 

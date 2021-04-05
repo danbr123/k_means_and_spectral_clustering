@@ -26,7 +26,7 @@ def array_to_adj_mat(arr):
     return W
 
 def find_lnorm(arr):
-    return mt.find_NGL2(arr)  + np.identity(arr.shape[0]) #TODO: decide if to remove the identity matrix
+    return mt.find_NGL2(arr) + np.identity(arr.shape[0]) #TODO: decide if to remove the identity matrix
 
 def calc_weight(p1, p2):
     w = np.exp(-mt.eucledian_norm(p1-p2)/2)

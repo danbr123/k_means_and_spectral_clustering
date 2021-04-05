@@ -1,6 +1,6 @@
 import numpy as np
 
-def k_means_pp(data, k):
+def k_means_pp(data, k):#TODO: print error if randon data generated contain less then k distinct points in space
     np.random.seed(0)  # use a specific seed to compare with the tester
     d = data.shape[1]
     n = data.shape[0]

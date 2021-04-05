@@ -9,10 +9,12 @@ def outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N):
     dataFile = open('data.txt', 'w')
     clustersFile = open('clusters.txt', 'w')
     for i in range(N):
-        dataFile.write(point_to_string(dataList[i]) + "," + str(y[i]) + "\n")
+        dataFile.write(point_to_string(dataList[i]) + "," + str(y[i]))
+        if i<N-1:
+            dataFile.write("\n")
     clustersFile.write(str(K) + "\n")
     clustersFile.write(clusterReader(Clusters_Spectral))
-    clustersFile.write(clusterReader(Clusters_Kmeans))
+    clustersFile.write(clusterReader(Clusters_Kmeans)[:-1])
     dataFile.close()
 
 
@@ -97,7 +99,7 @@ def clusterReader(Clusters_List):
 def point_to_string(lst):
     str_point = ""
     for t in lst:
-        str_point += str(np.float64(t)) + ","
+        str_point += str(np.round(t,16)) + ","
     return str_point[:-1]
 
 def RowIdxList(K, Clusters_List):

@@ -23,11 +23,11 @@ def main():
         print("Error in data and/or parameters")
         return 0
     dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d,
-                               random_state=None)  # TODO replace 1 in random_state = 1 with None
+                               random_state=9)  # TODO replace 1 in random_state = 1 with None
     dataList = dataMatrix.tolist()
 
     # First is the Spectral-Clustering-Final-Project
-    # r = True  # TODO delete this line
+    r = True  # TODO delete this line
     T, new_K = spectral_clustering(dataMatrix, r, K)
     # print(dataMatrix.dtype)
     Kfirstcentroids = k_means_pp(T, new_K).tolist()

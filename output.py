@@ -99,7 +99,7 @@ def clusterReader(Clusters_List):
 def point_to_string(lst):
     str_point = ""
     for t in lst:
-        str_point += str(np.round(t,16)) + ","
+        str_point += str(np.round(t,24)) + ","
     return str_point[:-1]
 
 def RowIdxList(K, Clusters_List):

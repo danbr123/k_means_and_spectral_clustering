@@ -17,14 +17,14 @@ MAX_CAPACITY3 = 400 #on Nova - 395 - 400, on Mac 460
 
 
 def main():
-    start = time.time()
     K, N, d, r, MAX_ITER = initialize()
     if K >= N:
         print("Error in data and/or parameters")
         return 0
     dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d,
-                               random_state=9)  # TODO replace 1 in random_state = 1 with None
+                               random_state=0)  # TODO replace 1 in random_state = 1 with None
     dataList = dataMatrix.tolist()
+
 
     # First is the Spectral-Clustering-Final-Project
     r = True  # TODO delete this line
@@ -39,10 +39,9 @@ def main():
     Kfirstcentroids = k_means_pp(dataMatrix, new_K).tolist()
     Clusters_Kmeans = alg.Kmeans(new_K, N, d, MAX_ITER, dataList, Kfirstcentroids)
 
+
     outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, new_K, N) #TODO check if new_K or K
     graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans)
-    end = time.time()
-    print("All:",end - start)
 
 def initialize():
     parser = argparse.ArgumentParser()

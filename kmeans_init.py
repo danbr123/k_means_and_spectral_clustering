@@ -34,5 +34,10 @@ def calc_di(data, centroids, count, di_array):
 def update_prob_array(di_array):  # update the array of probabilities with current centroids
     # calc sum of D_i for all points
     di_sum = di_array.sum()
+    if di_sum == 0:
+        print("Error: Division by zero in the K-means++ initialization algorithm")
+        print("Reason: There might be enough close samples to one another that results in K be bigger than the number "
+              "of different samples in space")
+
     # update probability array
     return di_array/di_sum

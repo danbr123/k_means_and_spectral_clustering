@@ -14,7 +14,8 @@ def array_to_adj_mat2(arr):
         arr3 = np.sqrt(arr2.sum(axis = 1))
         arr4 = np.exp(-arr3/2.)
         W[i] = arr4
-    return np.round(W, 5)
+        W[i][i] = 0
+    return W #np.round(W, 5)
 
 def array_to_adj_mat(arr):
     arr_size = arr.shape[0]
@@ -26,7 +27,7 @@ def array_to_adj_mat(arr):
     return W
 
 def find_lnorm(arr):
-    return mt.find_NGL2(arr) + np.identity(arr.shape[0]) #TODO: decide if to remove the identity matrix
+    return mt.find_NGL2(arr)# + np.identity(arr.shape[0]) #TODO: decide if to remove the identity matrix
 
 def calc_weight(p1, p2):
     w = np.exp(-mt.eucledian_norm(p1-p2)/2)
@@ -38,7 +39,11 @@ def calc_k(eigenval_mat,Ln):
     max = 0
     k = 0
     eigvals = np.sort(np.diag(eigenval_mat))
-    # print(np.sum(eigvals-np.sort(np.linalg.eigvals(Ln))))
+
+    # print(eigvals)
+    # print(np.sort(np.linalg.eigvals(Ln)))
+    # print(np.sum(abs(eigvals-np.sort(np.linalg.eigvals(Ln)))))
+
     for i in range(1, int(size/2) + 1):
         eigendiff = abs(eigvals[i] - eigvals[i-1])
         if max < eigendiff:
@@ -69,7 +74,6 @@ def spectral_clustering(data,r,K):
 
     start = time.time()
     A, Q = mt.QR_iter(Ln)
-
     end = time.time()
     print("AQ:",end - start)
 
@@ -77,9 +81,10 @@ def spectral_clustering(data,r,K):
     k = K
     if r:
         k = calc_k(A,Ln)
-        print(k)
+
     end = time.time()
     print("k:",end - start)
+
     vec_idx = np.argsort(np.diag(A))[0:k]  # array of the original idx of the sorted eigenvals
 
     start = time.time()
@@ -101,19 +106,14 @@ def spectral_clustering(data,r,K):
 # # print(arr)
 # #
 # start = time.time()
-# # # W = array_to_adj_mat(arr)
-# res ,k= spectral_clustering(arr,0)
-# end = time.time()
-# print(end - start)
-# print (res)
-# print(arr)
-# print(arr[:,0])
+# print("arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)")
+# print()
+# W = array_to_adj_mat2(arr)
+# print("W:")
+# print(W)
+# print()
 #
-# arr = np.array([[2,1,4],[1,1,1],[2,2,3]], dtype=np.float64)
 #
-# Q,R = mt.MGSA(arr)
-# print(Q)
-# print(R)
-# Q2,R2 = mt.MGSA2(arr)
-# print(Q2)
-# print(R2)
+# Ln = find_lnorm(W)
+# print("L_norm:")
+# print(Ln)

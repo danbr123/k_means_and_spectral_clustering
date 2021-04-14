@@ -10,12 +10,13 @@ def outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N):
     clustersFile = open('clusters.txt', 'w')
     for i in range(N):
         dataFile.write(point_to_string(dataList[i]) + "," + str(y[i]))
-        if i<N-1:
+        if i < N - 1:
             dataFile.write("\n")
     clustersFile.write(str(K) + "\n")
     clustersFile.write(clusterReader(Clusters_Spectral))
     clustersFile.write(clusterReader(Clusters_Kmeans)[:-1])
     dataFile.close()
+    clustersFile.close()
 
 
 def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
@@ -60,12 +61,11 @@ def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
 def visualization2d(ax, dataMatrix, K, lst, alg_name):
     Colors = plt.cm.viridis(np.linspace(0, 1, K))
     for i in range(K):
-        if lst[i].size != 0:
+        if len(lst[i]) != 0:
             newMatrix = dataMatrix[lst[i]].T
             x_axes = newMatrix[0]
             y_axes = newMatrix[1]
-            ax.scatter(x_axes, y_axes, c=[(Colors[i][0], Colors[i][1], Colors[i][2])], label="cluster " + str(i),
-                       alpha=1)
+            ax.scatter(x_axes, y_axes, c=[(Colors[i][0], Colors[i][1], Colors[i][2])], alpha=1)
         else:
             print("In " + alg_name + " ,cluster number " + str(i) + " is empty")
     ax.grid()
@@ -75,17 +75,18 @@ def visualization2d(ax, dataMatrix, K, lst, alg_name):
 def visualization3d(ax, dataMatrix, K, lst, alg_name):
     Colors = plt.cm.viridis(np.linspace(0, 1, K))  # TODO: check if works on nova
     for i in range(K):
-        if lst[i].size != 0:
+        if len(lst[i]) != 0:
             newMatrix = dataMatrix[lst[i]].T
             x_axes = newMatrix[0]
             y_axes = newMatrix[1]
             z_axes = newMatrix[2]
             ax.scatter(x_axes, y_axes, z_axes, c=[(Colors[i][0], Colors[i][1], Colors[i][2])],
-                       label="cluster " + str(i), alpha=1)
+                       alpha=1)
         else:
             print("In " + alg_name + " ,cluster number " + str(i) + " is empty")
     ax.dist = 9.5
     ax.set_title("\n" + alg_name, fontsize=16, y=1.1)
+
 
 def clusterReader(Clusters_List):
     s = ""
@@ -96,11 +97,13 @@ def clusterReader(Clusters_List):
             s = s[:-1] + "\n"
     return s
 
+
 def point_to_string(lst):
     str_point = ""
     for t in lst:
-        str_point += str(np.round(t,24)) + ","
+        str_point += str(np.round(t, 8)) + ","  # TODO: change 16 to 8
     return str_point[:-1]
+
 
 def RowIdxList(K, Clusters_List):
     lst = []
@@ -111,17 +114,19 @@ def RowIdxList(K, Clusters_List):
         lst.append(rowidx)
     return lst
 
+
 def summarize(ax, N, K, new_K, d, jm_spectral, jm_kmeans):
     # fig = plt.figure()
     report = "Data was generated from the values:\n""n = " + str(N) + " , " + "k = " + str(
         K) + "\n""The k that was used for both algorithms was " + str(
         new_K) + "\n""The Jaccard measure for Spectral Clustring: " + str(jm_spectral)[
-                                                                  0:6] + "\n""The Jaccard measure for K-means: " + str(
+                                                                      0:6] + "\n""The Jaccard measure for K-means: " + str(
         jm_kmeans)[0:6]
     if d == 3:
         ax.text(0.5, 0.4, report, horizontalalignment="center", verticalalignment="center", fontsize=24)
     else:
         ax.text(0.5, 0.5, report, horizontalalignment="center", verticalalignment="center", fontsize=24)
+
 
 def JaccardMeasure(y, lst, N, K):
     sum_std = 0
@@ -140,7 +145,7 @@ def JaccardMeasure(y, lst, N, K):
         sum_std += nC2(np.sum(arr_std))
         sum_alg += nC2(np.sum(mat_alg[i]))
 
-    mat_both = mat_std @ (mat_alg.T)
+    mat_both = mat_std @ mat_alg.T
     mat_sum = np.sum(nC2(mat_both))  # sum all pairs both in standard and algorithm clustering
     # upon return we sum pairs in the standard clustering and the algorithm clustering and subtract the shared pairs
     # of the two in order to avoid counting twice shared pairs.

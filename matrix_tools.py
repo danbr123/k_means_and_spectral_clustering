@@ -1,8 +1,11 @@
 import numpy as np
-import copy
+import copy, time
 
 EPSILON = 0.001
-
+global sumInit
+global sumU
+global sumR
+global sumQ
 
 def find_DDM2(mat):
     size = mat.shape[0]
@@ -24,9 +27,10 @@ def find_DDM(mat):
 def find_NGL2(mat):
     size = mat.shape[0]
     D_sq = find_DDM2(mat)
+
     L_norm = np.identity(size, dtype=np.float64) - np.dot(np.dot(D_sq, mat), D_sq)
-    arr_round = np.array(0.001 < abs(L_norm)) * 1.
-    return L_norm * arr_round
+    #arr_round = np.array(0.001 < abs(L_norm)) * 1.
+    return L_norm# * arr_round
 
 
 def find_NGL(mat):
@@ -36,23 +40,45 @@ def find_NGL(mat):
     return np.round(L_norm, 5)
 
 
-def MGSA2(mat):  # Modified Gram-Schmidt Algorithm
+def MGSA2(mat): # Modified Gram-Schmidt Algorithm
     size = mat.shape[0]
-    T = np.triu(np.ones(shape=(size, size)), 0)
+    # T = np.triu(np.ones(shape=(size, size)), 0)# - np.identity(size)
     U = copy.deepcopy(mat)
     R = np.zeros_like(mat, dtype=np.float64)
     Q = np.zeros_like(mat, dtype=np.float64)
-    On = np.ones(mat.shape[0])
+    # On = np.ones(mat.shape[0])
     for i in range(size):
-        R[i][i] = eucledian_norm(U[:, i])
-        Q[:, i] = U[:, i] / R[i][i]
-        R[i] = np.dot(Q[:, i], U) * T[i, :]
-        U = U - ((Q[:, i].reshape(mat.shape[0],1) * R[i]) * On)
-        On[i] = 0
-    return Q, R
+        # R[i][i] = eucledian_norm(U[:, i])
+        col_u = U[:, i]
+        r_ii = eucledian_norm(col_u)
+        R[i][i] = r_ii
+        col_q = col_u / r_ii
+        Q[:, i] = col_q
+        # start = time.time()
+        # U[:,i]=0
+        # print(U)
+        sub_matU = U[:,i+1:]
+        row_r_ij = np.dot(col_q, sub_matU)
+        R[i][i+1:] = row_r_ij
+        # end = time.time()
+        # sumR+= end - start
+        # start = time.time()
+        # W =(col_q.reshape(mat.shape[0],1)) * row_r_ij
+        # print(W)
+        # end = time.time()
+        # sumQ += end - start
+        # start = time.time()
+        U[:,i+1:] = sub_matU - (col_q[:,np.newaxis]* row_r_ij) #.reshape(mat.shape[0],1)) * row_r_ij
+        # R[i][i] = r_ii
+
+        # U = U - W
+        # # print(U)
+        # end = time.time()
+        # sumU += end - start
+    return Q, R #, sumInit, sumQ,sumR,sumU
 
 
-def MGSA(mat):  # Modified Gram-Schmidt Algorithm
+def MGSA(mat, sumInit, sumQ,sumR,sumU):  # Modified Gram-Schmidt Algorithm
     size = mat.shape[0]
     U = copy.deepcopy(mat)
     R = np.zeros_like(mat, dtype=np.float64)
@@ -61,9 +87,9 @@ def MGSA(mat):  # Modified Gram-Schmidt Algorithm
         R[i][i] = eucledian_norm(U[:, i])
         Q[:, i] = U[:, i] / R[i][i]
         for j in range(i + 1, size):
-            R[i][j] = np.dot(Q[:, i].T, U[:, j])
+            R[i][j] = np.dot(Q[:, i], U[:, j])
             U[:, j] = U[:, j] - R[i][j] * Q[:, i]
-    return Q, R
+    return Q, R, sumInit, sumQ,sumR,sumU
 
 
 def QR_iter(mat):

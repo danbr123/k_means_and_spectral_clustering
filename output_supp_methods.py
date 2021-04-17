@@ -21,7 +21,7 @@ def clusterReader(Clusters_List):
 def point_to_string(lst):
     str_point = ""
     for t in lst:
-        str_point += str(np.round(t, 8)) + ","  # TODO: change 16 to 8
+        str_point += str(np.round(t, 8)) + ","
     return str_point[:-1]
 
 
@@ -70,4 +70,6 @@ def JaccardMeasure(y, lst, N, K):
 
     # upon return we sum pairs in the standard clustering and the algorithm clustering and subtract the shared pairs
     # of the two in order to avoid counting twice shared pairs.
+    if mat_sum == 0: # if mat_sum is 0 may lead to division by zero Error
+        return 0
     return mat_sum / (sum_std + sum_alg - mat_sum)

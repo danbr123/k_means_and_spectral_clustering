@@ -7,9 +7,9 @@ from kmeans_init import k_means_pp
 from output import outputTextFiles, graphic
 from spectral_clustering import spectral_clustering
 
-KUPPER = 100
-MAX_CAPACITY2 = 200  # 400 #on Nova - 390 - 395, on Mac 460
-MAX_CAPACITY3 = 200  # 400 #on Nova - 395 - 400, on Mac 460
+KUPPER = 20
+MAX_CAPACITY2 =  450 #on Nova - 390 - 395, on Mac 460
+MAX_CAPACITY3 =  450 #on Nova - 395 - 400, on Mac 460
 
 '''
     main method in the main module
@@ -37,7 +37,7 @@ def main():
     Kfirstcentroids = k_means_pp(dataMatrix, new_K).tolist()
     Clusters_Kmeans = alg.Kmeans(new_K, N, d, MAX_ITER, dataList, Kfirstcentroids)
 
-    outputTextFiles(dataList, y, Clusters_Spectral, Clusters_Kmeans, new_K, N)  # TODO check if new_K or K
+    outputTextFiles(dataList, y, Clusters_Spectral, Clusters_Kmeans, new_K, N)
     graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans)
 
 '''
@@ -62,10 +62,10 @@ def initialize():
     if r:
         if d == 2:
             K = random.randint(KUPPER // 2, KUPPER)
-            N = random.randint(K + 1, MAX_CAPACITY2)  # TODO: #N = random.randint(NUPPER2 // 2, NUPPER2)
+            N = random.randint(max(MAX_CAPACITY2//2,K+1), MAX_CAPACITY2)
         else:
             K = random.randint(KUPPER // 2, KUPPER)
-            N = random.randint(K + 1, MAX_CAPACITY3)  # TODO: #N = random.randint(NUPPER3 // 2, NUPPER3)
+            N = random.randint(max(MAX_CAPACITY2//2,K+1), MAX_CAPACITY3)
     return K, N, d, r, MAX_ITER
 
 main()

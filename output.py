@@ -3,9 +3,13 @@ import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.gridspec import GridSpec
+from output_supp_methods import clusterReader, point_to_string, RowIdxList, JaccardMeasure
 
-
-def outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N):
+''' 
+    Create data.txt & cluster.txt files and fill them with data
+    from the Spectral and K-means algorithm in the right format.
+'''
+def outputTextFiles(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N):
     dataFile = open('data.txt', 'w')
     clustersFile = open('clusters.txt', 'w')
     for i in range(N):
@@ -19,6 +23,12 @@ def outputFile(dataList, y, Clusters_Spectral, Clusters_Kmeans, K, N):
     clustersFile.close()
 
 
+''' 
+    Create clusters.pdf
+    define matplotlib.pyplot figure and divide it to 3 subplot
+    2 upper subplot filled with the 2 algorithms plots
+    lower subplot contain summarize text of the generated data and calculation
+'''
 def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
     # Set up a figure and grid partition
     fig = plt.figure(figsize=(11, 8))
@@ -58,8 +68,12 @@ def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
     # plt.show()
 
 
+''' 
+    input is subplot axes and data
+    fill the 2'd axes with colored points according to cluster classification
+'''
 def visualization2d(ax, dataMatrix, K, lst, alg_name):
-    Colors = plt.cm.viridis(np.linspace(0, 1, K))
+    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # different colors array of size k
     for i in range(K):
         if len(lst[i]) != 0:
             newMatrix = dataMatrix[lst[i]].T
@@ -72,8 +86,12 @@ def visualization2d(ax, dataMatrix, K, lst, alg_name):
     ax.set_title(alg_name, size=16)
 
 
+''' 
+    input is subplot axes and data
+    fill the 3'd axes with colored points according to cluster classification
+'''
 def visualization3d(ax, dataMatrix, K, lst, alg_name):
-    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # TODO: check if works on nova
+    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # different colors array of size k
     for i in range(K):
         if len(lst[i]) != 0:
             newMatrix = dataMatrix[lst[i]].T
@@ -88,33 +106,11 @@ def visualization3d(ax, dataMatrix, K, lst, alg_name):
     ax.set_title("\n" + alg_name, fontsize=16, y=1.1)
 
 
-def clusterReader(Clusters_List):
-    s = ""
-    for i in Clusters_List:
-        if i != -1:
-            s = s + str(i) + ","
-        else:
-            s = s[:-1] + "\n"
-    return s
-
-
-def point_to_string(lst):
-    str_point = ""
-    for t in lst:
-        str_point += str(np.round(t, 8)) + ","  # TODO: change 16 to 8
-    return str_point[:-1]
-
-
-def RowIdxList(K, Clusters_List):
-    lst = []
-    for i in range(K):
-        idx = Clusters_List.index(-1)
-        rowidx = np.array(Clusters_List[:idx])
-        Clusters_List = Clusters_List[idx + 1:]
-        lst.append(rowidx)
-    return lst
-
-
+''' 
+    input is subplot axes and data
+    fill the axes with text to present the summarize report in the right format
+    and with the generated data and algorithm calculation
+'''
 def summarize(ax, N, K, new_K, d, jm_spectral, jm_kmeans):
     # fig = plt.figure()
     report = "Data was generated from the values:\n""n = " + str(N) + " , " + "k = " + str(
@@ -126,27 +122,3 @@ def summarize(ax, N, K, new_K, d, jm_spectral, jm_kmeans):
         ax.text(0.5, 0.4, report, horizontalalignment="center", verticalalignment="center", fontsize=24)
     else:
         ax.text(0.5, 0.5, report, horizontalalignment="center", verticalalignment="center", fontsize=24)
-
-
-def JaccardMeasure(y, lst, N, K):
-    sum_std = 0
-    sum_alg = 0
-    nC2 = np.frompyfunc(lambda n: int(n * (n - 1) / 2), 1, 1)
-
-    mat_std = np.zeros(shape=(K, N))
-    mat_alg = np.zeros(shape=(K, N))
-    for i in range(K):
-        arr_std = np.array(y[:] == i) * 1.
-        mat_std[i] = arr_std
-        for j in lst[i]:
-            mat_alg[i][j] = 1
-
-        # sum pairs in each cluster for standard and algorithm clustering separately
-        sum_std += nC2(np.sum(arr_std))
-        sum_alg += nC2(np.sum(mat_alg[i]))
-
-    mat_both = mat_std @ mat_alg.T
-    mat_sum = np.sum(nC2(mat_both))  # sum all pairs both in standard and algorithm clustering
-    # upon return we sum pairs in the standard clustering and the algorithm clustering and subtract the shared pairs
-    # of the two in order to avoid counting twice shared pairs.
-    return mat_sum / (sum_std + sum_alg - mat_sum)

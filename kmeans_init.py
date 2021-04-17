@@ -1,6 +1,13 @@
 import numpy as np
+import sys
 
-def k_means_pp(data, k):#TODO: print error if randon data generated contain less then k distinct points in space
+''' 
+    input is:
+        - data of point - np.array of size(N,d)
+        - k (number of clusters)
+    return array of size (k,d) with initialize point for each cluster
+'''
+def k_means_pp(data, k):  # TODO: print error if random data generated contain less then k distinct points in space
     np.random.seed(0)  # use a specific seed to compare with the tester
     d = data.shape[1]
     n = data.shape[0]
@@ -9,7 +16,6 @@ def k_means_pp(data, k):#TODO: print error if randon data generated contain less
     di_array = np.empty(n, dtype=np.float64)
     centroid_idx = np.random.choice(n)
     centroids_array[0] = data[centroid_idx]  # initial centroid
-
     centroids_cnt += 1
     for i in range(1, k):
         di_array = calc_di(data, centroids_array, centroids_cnt, di_array)
@@ -20,24 +26,30 @@ def k_means_pp(data, k):#TODO: print error if randon data generated contain less
 
     return centroids_array
 
-
+'''
+    given centroids array and there D value - di_array and the data
+    calculate new di_array (after new centroid were chosen)
+'''
 def calc_di(data, centroids, count, di_array):
     if count == 1:
         table2 = np.tile(centroids[count - 1], (data.shape[0], 1))
         return ((data - table2) ** 2).sum(axis=1)
 
-    table2 = np.tile(centroids[count-1], (data.shape[0], 1))
-    row_sum = ((data - table2)**2).sum(axis=1)
-    row_bigger = (di_array < row_sum)*1
-    return di_array * row_bigger + (1-row_bigger) * row_sum
+    table2 = np.tile(centroids[count - 1], (data.shape[0], 1))
+    row_sum = ((data - table2) ** 2).sum(axis=1)
+    row_bigger = (di_array < row_sum) * 1
+    return di_array * row_bigger + (1 - row_bigger) * row_sum
 
+'''
+    given D value of centroids - di_array
+    calculate probability_array
+'''
 def update_prob_array(di_array):  # update the array of probabilities with current centroids
     # calc sum of D_i for all points
     di_sum = di_array.sum()
     if di_sum == 0:
         print("Error: Division by zero in the K-means++ initialization algorithm")
-        print("Reason: There might be enough close samples to one another that results in K be bigger than the number "
-              "of different samples in space")
+        sys.exit()
 
     # update probability array
-    return di_array/di_sum
+    return di_array / di_sum

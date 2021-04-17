@@ -6,6 +6,7 @@
 typedef struct Cluster Cluster;
 typedef struct Point Point;
 
+/* methods decleration*/
 double find_dist_from_cluster(Point * point, Cluster* cluster);
 void add_point_to_cluster(Point * point, Cluster *c);
 Cluster* create_cluster(Point * initial_point, int dim, int data_len);
@@ -16,7 +17,8 @@ void clear_cluster(Cluster** c, int K);
 void remember_centers(Cluster** clusters, int K, int d, double ** prev_centers);
 Cluster ** firstKClusters(int d, int K, int N, Point ** data);
 int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d);
-
+void free_prev_centers(double ** prev_centers, int j);
+void free_main(Point ** data, Point ** Kfirstcentroids, Cluster ** clusters,int K,int j, int h, int l,int m);
 
 struct Cluster{
     double* center;  /*list of center coordinates*/
@@ -29,6 +31,8 @@ struct Point{
     int tag;  /*tag is the index of the point as created in the raw data*/
 };
 
+/*global variable*/
+int memory_fault_flag = 0;
 
 /*
  * Main function that get all the arguments and print K-clusters
@@ -40,27 +44,35 @@ static Cluster** Cmain(int K, int N, int d, int MAX_ITER, Point ** data, Point *
     Cluster **clusters;
     double **prev_centers;
     clusters = firstKClusters(d,K,N, Kfirstcentroids);
+    if (memory_fault_flag ==1)
+                return clusters;
     prev_centers = (double **)malloc(sizeof(double *)*(K));
-
+    if (prev_centers == NULL){
+        memory_fault_flag =1;
+        return clusters;
+    }
     for(i=0;i<K;i++)
     {
-        prev_centers[i]=(double *)malloc(sizeof(double)*d);
+        prev_centers[i]= (double *)malloc(sizeof(double)*d);
+        if (prev_centers[i] == NULL){
+            free_prev_centers(prev_centers,i);
+            memory_fault_flag = 1;
+            return clusters;
+        }
         for(j=0;j<d;j++){
             prev_centers[i][j] = clusters[i]->center[j];
         }
     }
-    while (iteration < MAX_ITER && equal == 0){
-        clear_cluster(clusters, K);
-        remember_centers(clusters, K, d, prev_centers);
-        cluster_step(clusters, data, N, K);
-        equal = cluster_equal(clusters,prev_centers, K, d);
-        iteration++;
+    if (memory_fault_flag == 0){
+        while (iteration < MAX_ITER && equal == 0){
+            clear_cluster(clusters, K);
+            remember_centers(clusters, K, d, prev_centers);
+            cluster_step(clusters, data, N, K);
+            equal = cluster_equal(clusters,prev_centers, K, d);
+            iteration++;
+        }
     }
-    for(i=0;i<K;i++)
-    {
-        free(prev_centers[i]);
-    }
-    free(prev_centers);
+    free_prev_centers(prev_centers,K);
     return clusters;
 }
 
@@ -76,69 +88,87 @@ static PyObject* Kmeans_main(PyObject *self, PyObject *args)
     PyObject *dataList, *KfirstcentroidsList, *dim0, *dim1, *Py_Clusters_List, *item;
     PyObject *mark = Py_BuildValue("i",-1);
 
-
-
     if(!PyArg_ParseTuple(args, "iiiiOO", &K, &N, &d, &MAX_ITER, &dataList, &KfirstcentroidsList)) {
         /* In the CPython API, a NULL value is never valid for a
-                     PyObject* so it is used to signal that an error has occurred. */
+                     PyObject* so it is used to signal that an error has occurred.*/
+        printf("Error in data and/or parameters in the API stage\n");
         PyErr_SetString(PyExc_NameError,"Error in data and/or parameters in the API stage");
         PyErr_Occurred();
         return NULL;
         }
+
     Point ** data = (Point **)malloc(sizeof(Point*)*N);
     Point ** Kfirstcentroids = (Point **)malloc(sizeof(Point*)*K);
-    for (i=0; i < N; i++) {
-        data[i] = (Point *)malloc(sizeof(Point));
-        data[i]->coordinates = (double*)calloc(d, sizeof(double));
-        data[i]->tag = i;
-        if(i<K){
-            Kfirstcentroids[i] = (Point *)malloc(sizeof(Point));
-            Kfirstcentroids[i]->coordinates = (double*)calloc(d, sizeof(double));
-            Kfirstcentroids[i]->tag = i;
-        }
-        for (j=0; j < d; j++){
-            dim0 = PyList_GetItem(dataList,i);
-            dim1 = PyList_GetItem(dim0,j);
-            data[i]->coordinates[j] = PyFloat_AsDouble(dim1);
+    if (data == NULL || Kfirstcentroids == NULL)
+        memory_fault_flag =1;
+    else{
+        for (i=0; i < N; i++) {
+            data[i] = (Point *)malloc(sizeof(Point));
+            if (data[i] == NULL){
+                free_main(data, Kfirstcentroids, NULL, K, i, i, i, i);
+                memory_fault_flag =1;
+                break;
+            }
+            data[i]->coordinates = (double*)calloc(d, sizeof(double));
+            if (data[i]->coordinates == NULL){
+                free_main(data, Kfirstcentroids, NULL, K, i+1, i, i, i);
+                memory_fault_flag =1;
+                break;
+            }
+            data[i]->tag = i;
             if(i<K){
-                dim0 = PyList_GetItem(KfirstcentroidsList,i);
+                Kfirstcentroids[i] = (Point *)malloc(sizeof(Point));
+                if (Kfirstcentroids[i] == NULL){
+                    free_main(data, Kfirstcentroids, NULL, K, i+1, i+1, i, i);
+                    memory_fault_flag =1;
+                    break;
+                }
+                Kfirstcentroids[i]->coordinates = (double*)calloc(d, sizeof(double));
+                if (Kfirstcentroids[i]->coordinates == NULL){
+                    free_main(data, Kfirstcentroids, NULL, K, i+1, i+1, i+1, i);
+                    memory_fault_flag =1;
+                    break;
+                }
+                Kfirstcentroids[i]->tag = i;
+            }
+            for (j=0; j < d; j++){
+                dim0 = PyList_GetItem(dataList,i);
                 dim1 = PyList_GetItem(dim0,j);
-                Kfirstcentroids[i]->coordinates[j] = PyFloat_AsDouble(dim1);
+                data[i]->coordinates[j] = PyFloat_AsDouble(dim1);
+                if(i<K){
+                    dim0 = PyList_GetItem(KfirstcentroidsList,i);
+                    dim1 = PyList_GetItem(dim0,j);
+                    Kfirstcentroids[i]->coordinates[j] = PyFloat_AsDouble(dim1);
+                }
             }
         }
     }
     /*Call the C Kmean algorithm from task 1 */
-    clusters = Cmain(K, N, d, MAX_ITER, data, Kfirstcentroids);
+    if (memory_fault_flag ==0)
+        clusters = Cmain(K, N, d, MAX_ITER, data, Kfirstcentroids);
 
     /*Build a Python list from clusters */
-    Py_Clusters_List = PyList_New(N+K);
-    for (i=0; i<K; i++) {
-        for(j=0;j<=clusters[i]->idx;j++){
-            if(j<clusters[i]->idx){
-                item = Py_BuildValue("i",clusters[i]->points[j]->tag);
-                PyList_SetItem(Py_Clusters_List, count, item);
-            }else
-                PyList_SetItem(Py_Clusters_List, count, mark);
-            count++;
-        }
-    }
-    for (i=0; i < N; i++) {
-        free(data[i]->coordinates);
-        free(data[i]);
-        if(i<K){
-            free(Kfirstcentroids[i]->coordinates);
-            free(Kfirstcentroids[i]);
+    if (memory_fault_flag ==0){
+        Py_Clusters_List = PyList_New(N+K);
+        for (i=0; i<K; i++) {
+            for(j=0;j<=clusters[i]->idx;j++){
+                if(j<clusters[i]->idx){
+                    item = Py_BuildValue("i",clusters[i]->points[j]->tag);
+                    PyList_SetItem(Py_Clusters_List, count, item);
+                }else
+                    PyList_SetItem(Py_Clusters_List, count, mark);
+                count++;
             }
+        }
+        /* free data, Kfirstcentroids and clusters*/
+        free_main(data, Kfirstcentroids, clusters, K ,N ,N ,K ,K);
     }
-    free(data);
-    free(Kfirstcentroids);
-    for(i=0;i<K;i++)
-    {
-        free(clusters[i]->center);
-        free(clusters[i]->points);
-        free(clusters[i]);
+    else{
+        printf("Memory Allocation Error\n");
+        PyErr_SetString(PyExc_NameError,"Memory Allocation Error");
+        PyErr_Occurred();
+        return NULL;
     }
-    free(clusters);
     return Py_Clusters_List; /*  Py_BuildValue(...) returns a PyObject*  */
 }
 
@@ -181,15 +211,23 @@ PyInit_mykmeanssp(void)
 /*create a new cluster with a single point (for the first step of the algorithm). center is calculated as well*/
 Cluster* create_cluster(Point * initial_point, int dim, int data_len){
     Cluster* c = malloc(sizeof(Cluster));
+    if (c==NULL){
+        memory_fault_flag =1;
+        return c;
+    }
     c->center = (double*)calloc(dim, sizeof(double));
     c->points = (Point **)malloc(sizeof(Point*)*data_len);
     c->idx = 0;
     c->dim = dim;
+    if (c->center == NULL || c->points == NULL){
+        memory_fault_flag =1;
+        return c;
+    }
     add_point_to_cluster(initial_point, c);
     update_cluster_center(c);
     return c;
 }
-
+/* add a point to a cluster and update idx field*/
 void add_point_to_cluster(Point * point, Cluster *c){
     c -> points[c -> idx] = point;
     c -> idx++;
@@ -209,6 +247,7 @@ void update_cluster_center(Cluster *c){
     }
 }
 
+/* set cluster idx field to 0 and by that clear cluster from points*/
 void clear_cluster(Cluster** c, int K){
     int i;
     for (i=0; i<K; ++i){
@@ -255,14 +294,29 @@ void cluster_step(Cluster** clusters, Point ** data, int points_count, int k){
     }
 }
 
+/* allocate Cluster in memory and fill them with each first point from 'Kfirstcentroids'*/
 Cluster ** firstKClusters(int d, int K, int N, Point **data){
-    int i;
+    int i,j;
     Cluster **clusters=(Cluster **)malloc(sizeof(Cluster*)*K);
-    for (i = 0; i<K; i++){
-        clusters[i] = create_cluster(data[i], d, N);
+    if (clusters == NULL)
+        memory_fault_flag =1;
+    else{
+        for (i = 0; i<K; i++){
+            clusters[i] = create_cluster(data[i], d, N);
+            if (memory_fault_flag ==1){
+                for (j = 0; j<i; j++){
+                   free(clusters[j]->center);
+                   free(clusters[j]->points);
+                }
+                free(clusters);
+                return NULL;
+            }
+        }
     }
     return clusters;
 }
+
+/* deep copy from current clusters to temporary clusters*/
 void remember_centers(Cluster** clusters, int K, int d, double ** prev_centers){
     int i,j;
     for(i=0;i<K;i++){
@@ -271,6 +325,8 @@ void remember_centers(Cluster** clusters, int K, int d, double ** prev_centers){
         }
     }
 }
+
+/* check if clusters hasn't change between iteration - comparison by each coordinate of cluster center*/
 int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d) {
     double temp =0;
     int i,j;
@@ -284,5 +340,37 @@ int cluster_equal(Cluster ** clusters, double ** prev_centers, int K, int d) {
     return 1;
 }
 
-
-
+/* free metods - free allocated memory on the heap*/
+/* free method for temporary centers - 'prev_centers'*/
+void free_prev_centers(double ** prev_centers, int j){
+    int i;
+    for(i=0;i<j;i++){
+        free(prev_centers[i]);
+    }
+    free(prev_centers);
+}
+/* free method for original data and clusters  - 'data', 'Kfirstcentroids', 'clusters'*/
+void free_main(Point ** data, Point ** Kfirstcentroids, Cluster ** clusters,int K,int j, int h, int l,int m){
+    int i;
+    for (i=0; i < j; i++) {
+        if(i<h)
+            free(data[i]->coordinates);
+        free(data[i]);
+        if(i<K && i<l){
+            if(i<m)
+                free(Kfirstcentroids[i]->coordinates);
+            free(Kfirstcentroids[i]);
+            }
+    }
+    free(data);
+    free(Kfirstcentroids);
+    if (clusters != NULL){
+        for(i=0;i<K;i++)
+        {
+            free(clusters[i]->center);
+            free(clusters[i]->points);
+            free(clusters[i]);
+        }
+        free(clusters);
+    }
+}

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.gridspec import GridSpec
 from output_supp_methods import clusterReader, point_to_string, RowIdxList, JaccardMeasure
+import sys
 
 ''' 
     Create data.txt & cluster.txt files and fill them with data
@@ -65,7 +66,6 @@ def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
     pp = PdfPages('clusters.pdf')
     pp.savefig(fig)
     pp.close()
-    # plt.show()
 
 
 ''' 
@@ -82,6 +82,7 @@ def visualization2d(ax, dataMatrix, K, lst, alg_name):
             ax.scatter(x_axes, y_axes, c=[(Colors[i][0], Colors[i][1], Colors[i][2])], alpha=1)
         else:
             print("In " + alg_name + " ,cluster number " + str(i) + " is empty")
+            sys.exit()
     ax.grid()
     ax.set_title(alg_name, size=16)
 
@@ -102,6 +103,7 @@ def visualization3d(ax, dataMatrix, K, lst, alg_name):
                        alpha=1)
         else:
             print("In " + alg_name + " ,cluster number " + str(i) + " is empty")
+            sys.exit()
     ax.dist = 9.5
     ax.set_title("\n" + alg_name, fontsize=16, y=1.1)
 

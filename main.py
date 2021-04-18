@@ -40,7 +40,7 @@ def main():
         Clusters_Spectral = alg.Kmeans(new_K, N, new_K, MAX_ITER, TList,
                                        Kfirstcentroids_spectral)  # TODO #is it intentional that we pass d as new_k
         Clusters_Kmeans = alg.Kmeans(new_K, N, d, MAX_ITER, dataList, Kfirstcentroids_Kmeans)
-    except:
+    except NameError:
         return 0
 
     outputTextFiles(dataList, y, Clusters_Spectral, Clusters_Kmeans, new_K, N)

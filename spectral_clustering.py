@@ -1,5 +1,6 @@
 import numpy as np
 import matrix_tools as mt
+import sys
 
 EPSILON = 0.0001
 from sklearn.datasets import make_blobs
@@ -65,7 +66,7 @@ def find_t(vec_mat, k, vec_idx_arr):  # calculate the matrix T, uses a vector of
         except ZeroDivisionError:
             print("Error: Division by zero while calculating T. normalized sum of row ", i, " is 0")
             print("Eigen Vector Matrix:" + vec_mat)
-            exit()  # TODO ???
+            sys.exit()
             return
     return T
 

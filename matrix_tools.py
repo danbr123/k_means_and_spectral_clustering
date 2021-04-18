@@ -1,5 +1,6 @@
 import numpy as np
 import copy, time
+import sys
 
 EPSILON = 0.001
 
@@ -12,7 +13,8 @@ def find_DDM(mat):  # calculate the square root of the Diagonal Degree Matrix
         return 1 / np.sqrt(D_sum) * I
     except ZeroDivisionError:
         print("Error: Division by Zero while calculating the Diagonal Degree Matrix")
-        exit()  # TODO ???
+        sys.exit()
+
 
 # def find_DDM(mat):  # OLD
 #     size = mat.shape[0]
@@ -57,7 +59,7 @@ def MGS(mat):  # Modified Gram-Schmidt Algorithm
         except ZeroDivisionError:
             print("Error: Division by zero in MGS. input matrix column ", i, " is empty")
             print("Input Matrix: ", U)
-            exit()  # TODO ???
+            sys.exit()
             return
         Q[:, i] = col_q
         sub_matU = U[:, i + 1:]  # contains columns of U only from column i+1 to n=size(U)

@@ -34,7 +34,6 @@ def main():
 
     # K-means Algorithm
     Kfirstcentroids_Kmeans = k_means_pp(dataMatrix, new_K).tolist()
-    print("here")
     # call alg.Kmeans
     try:
         Clusters_Spectral = alg.Kmeans(new_K, N, new_K, MAX_ITER, TList,

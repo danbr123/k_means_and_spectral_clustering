@@ -1,13 +1,14 @@
 import numpy as np
 import sys
 
+EPSILON = 0.0001
 ''' 
     input is:
         - data of point - np.array of size(N,d)
         - k (number of clusters)
     return array of size (k,d) with initialize point for each cluster
 '''
-def k_means_pp(data, k):  # TODO: print error if random data generated contain less then k distinct points in space
+def k_means_pp(data, k):  # TODO: add more documentation
     np.random.seed(0)  # use a specific seed to compare with the tester
     d = data.shape[1]
     n = data.shape[0]
@@ -47,7 +48,7 @@ def calc_di(data, centroids, count, di_array):
 def update_prob_array(di_array):  # update the array of probabilities with current centroids
     # calc sum of D_i for all points
     di_sum = di_array.sum()
-    if di_sum == 0:
+    if di_sum < EPSILON :
         print("Error: Division by zero in the K-means++ initialization algorithm")
         sys.exit()
 

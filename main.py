@@ -34,11 +34,11 @@ def main():
 
     # K-means Algorithm
     Kfirstcentroids_Kmeans = k_means_pp(dataMatrix, new_K).tolist()
-
+    print("here")
     # call alg.Kmeans
     try:
         Clusters_Spectral = alg.Kmeans(new_K, N, new_K, MAX_ITER, TList,
-                                       Kfirstcentroids_spectral)  # TODO #is it intentional that we pass d as new_k
+                                       Kfirstcentroids_spectral)
         Clusters_Kmeans = alg.Kmeans(new_K, N, d, MAX_ITER, dataList, Kfirstcentroids_Kmeans)
     except NameError:
         return 0

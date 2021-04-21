@@ -2,12 +2,12 @@ import numpy as np
 import matrix_tools as mt
 
 EPSILON = 0.0001
-from sklearn.datasets import make_blobs
-from scipy.sparse import csgraph
 
 '''
 convert generated data into Weighted Adjacency Matrix
 '''
+
+
 def array_to_adj_mat(arr):
     arr_size = arr.shape[0]
     W = np.empty(shape=(arr_size, arr_size), dtype=np.float64)
@@ -21,9 +21,12 @@ def array_to_adj_mat(arr):
         W[i][i] = 0  # cancel inner loop
     return W
 
+
 '''
 find the index correspond to the largest Eigen-gap 
 '''
+
+
 def calc_k(eigenval_mat):
     size = eigenval_mat.shape[0]
     max = 0
@@ -37,32 +40,45 @@ def calc_k(eigenval_mat):
             k = i
     return k
 
+
 '''
 calculate the matrix T, uses a vector of the original indexes of each eigenval
 in the sorted eigenval array to sort the eigen vectors accordingly
 '''
+
+
 def find_t(vec_mat, k, vec_idx_arr):
     size = vec_mat.shape[0]
     T = np.zeros(shape=(size, k))
     for i in range(size):
         norm_sum = np.sqrt((np.sum(vec_mat[i][vec_idx_arr.tolist()] ** 2)))  # calculating the value required to
-                                                                             # normalize the row
+        # normalize the row
         if norm_sum > EPSILON:
             T[i] = vec_mat[i][vec_idx_arr.tolist()] / norm_sum  # normalizing U by the norm_sum to get T
     return T
 
+
 '''
 process the data to calculate T and K, and return them
 '''
+
+
 def spectral_clustering(data, r, K):
+    # Calculate Weighted Adjacency Matrix
     W = array_to_adj_mat(data)
+
+    # Calculate Normalized Graph Laplacian
     Ln = mt.find_NGL(W)
+
+    # Calculate A, Q from the QR iteration algorithm
     A, Q = mt.QR_iter(Ln)
 
+    # Calculate new K from the eigen-gap
     k = K
     if r:
         k = calc_k(A)
 
-    vec_idx = np.argsort(np.diag(A))[0:k]  # array of the original idx of the sorted eigenvalues
+    # calculate the matrix T
+    vec_idx = np.argsort(np.diag(A))[0:k]  # Array of the original idx of the sorted eigenvalues
     T = find_t(Q, k, vec_idx)
     return T, k

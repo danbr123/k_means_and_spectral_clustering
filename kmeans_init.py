@@ -8,7 +8,10 @@ EPSILON = 0.0001
         - k (number of clusters)
     return array of size (k,d) with initialize point for each cluster
 '''
-def k_means_pp(data, k):  # TODO: add more documentation
+
+
+def k_means_pp(data, k):
+    # variables and Numpy arrays
     np.random.seed(0)  # use a specific seed to compare with the tester
     d = data.shape[1]
     n = data.shape[0]
@@ -18,6 +21,8 @@ def k_means_pp(data, k):  # TODO: add more documentation
     centroid_idx = np.random.choice(n)
     centroids_array[0] = data[centroid_idx]  # initial centroid
     centroids_cnt += 1
+
+    # initialize cluster with a single point each - loop:
     for i in range(1, k):
         di_array = calc_di(data, centroids_array, centroids_cnt, di_array)
         probability_array = update_prob_array(di_array)
@@ -27,28 +32,38 @@ def k_means_pp(data, k):  # TODO: add more documentation
 
     return centroids_array
 
+
 '''
     given centroids array and there D value - di_array and the data
     calculate new di_array (after new centroid were chosen)
 '''
+
+
 def calc_di(data, centroids, count, di_array):
     if count == 1:
-        table2 = np.tile(centroids[count - 1], (data.shape[0], 1))
-        return ((data - table2) ** 2).sum(axis=1)
+        table2 = np.tile(centroids[count - 1],
+                         (data.shape[0], 1))  # duplicate count'th centroids N times - shape = (N,d)
+        return ((data - table2) ** 2).sum(
+            axis=1)  # calculate euclidean distance between count'th centroids and each point from data
 
-    table2 = np.tile(centroids[count - 1], (data.shape[0], 1))
-    row_sum = ((data - table2) ** 2).sum(axis=1)
-    row_bigger = (di_array < row_sum) * 1
-    return di_array * row_bigger + (1 - row_bigger) * row_sum
+    table2 = np.tile(centroids[count - 1], (data.shape[0], 1))  # duplicate count'th centroids N times - shape = (N,d)
+    row_sum = ((data - table2) ** 2).sum(
+        axis=1)  # calculate euclidean distance between count'th centroids and each point from data
+    row_bigger = (di_array < row_sum) * 1  # 1 if euclidean distance bigger then d_i, otherwise 0
+    return di_array * row_bigger + (
+                1 - row_bigger) * row_sum  # update smaller euclidean distance to di_array (as a return array)
+
 
 '''
     given D value of centroids - di_array
     calculate probability_array
 '''
+
+
 def update_prob_array(di_array):  # update the array of probabilities with current centroids
     # calc sum of D_i for all points
     di_sum = di_array.sum()
-    if di_sum < EPSILON :
+    if di_sum < EPSILON:
         print("Error: Division by zero in the K-means++ initialization algorithm")
         sys.exit()
 

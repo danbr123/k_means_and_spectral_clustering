@@ -38,31 +38,31 @@ def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
     lst_Spectral = RowIdxList(new_K, Clusters_Spectral)
     lst_Kmeans = RowIdxList(new_K, Clusters_Kmeans)
     if d == 2:
-        # add subplots
+        # Add subplots
         ax1 = fig.add_subplot(gs[0, 1])
         ax2 = fig.add_subplot(gs[0, 0])
 
         visualization2d(ax1, dataMatrix, new_K, lst_Spectral, "Normalized Spectral Clustering")
         visualization2d(ax2, dataMatrix, new_K, lst_Kmeans, "K-means")
     else:
-        # add subplots
+        # Add subplots
         ax1 = fig.add_subplot(gs[0, 1], projection='3d')
         ax2 = fig.add_subplot(gs[0, 0], projection='3d')
 
         visualization3d(ax1, dataMatrix, new_K, lst_Spectral, "Normalized Spectral Clustering")
         visualization3d(ax2, dataMatrix, new_K, lst_Kmeans, "K-means")
 
-    # # calculating the Jaccard-Measure
+    # Calculating the Jaccard-Measure
     jm_spectral = JaccardMeasure(y, lst_Spectral, N, new_K)
     jm_kmeans = JaccardMeasure(y, lst_Kmeans, N, new_K)
 
-    # add last subplot for text
+    # Add last subplot for text
     ax3 = fig.add_subplot(gs[1, :])
     ax3.set_axis_off()  # make plot invisible
     summarize(ax3, N, K, new_K, d, jm_spectral, jm_kmeans)
     fig.tight_layout()
 
-    # creating the PDF
+    # Creating the PDF
     pp = PdfPages('clusters.pdf')
     pp.savefig(fig)
     pp.close()
@@ -73,7 +73,7 @@ def graphic(dataMatrix, y, N, K, new_K, d, Clusters_Spectral, Clusters_Kmeans):
     fill the 2'd axes with colored points according to cluster classification
 '''
 def visualization2d(ax, dataMatrix, K, lst, alg_name):
-    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # different colors array of size k
+    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # Different colors array of size k
     for i in range(K):
         if len(lst[i]) != 0:
             newMatrix = dataMatrix[lst[i]].T
@@ -92,7 +92,7 @@ def visualization2d(ax, dataMatrix, K, lst, alg_name):
     fill the 3'd axes with colored points according to cluster classification
 '''
 def visualization3d(ax, dataMatrix, K, lst, alg_name):
-    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # different colors array of size k
+    Colors = plt.cm.viridis(np.linspace(0, 1, K))  # Different colors array of size k
     for i in range(K):
         if len(lst[i]) != 0:
             newMatrix = dataMatrix[lst[i]].T
@@ -114,7 +114,6 @@ def visualization3d(ax, dataMatrix, K, lst, alg_name):
     and with the generated data and algorithm calculation
 '''
 def summarize(ax, N, K, new_K, d, jm_spectral, jm_kmeans):
-    # fig = plt.figure()
     report = "Data was generated from the values:\n""n = " + str(N) + " , " + "k = " + str(
         K) + "\n""The k that was used for both algorithms was " + str(
         new_K) + "\n""The Jaccard measure for Spectral Clustring: " + str(jm_spectral)[

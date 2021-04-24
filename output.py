@@ -117,8 +117,8 @@ def summarize(ax, N, K, new_K, d, jm_spectral, jm_kmeans):
     report = "Data was generated from the values:\n""n = " + str(N) + " , " + "k = " + str(
         K) + "\n""The k that was used for both algorithms was " + str(
         new_K) + "\n""The Jaccard measure for Spectral Clustring: " + str(jm_spectral)[
-                                                                      0:6] + "\n""The Jaccard measure for K-means: " + str(
-        jm_kmeans)[0:6]
+                                                                      0:4] + "\n""The Jaccard measure for K-means: " + str(
+        jm_kmeans)[0:4]
     if d == 3:
         ax.text(0.5, 0.4, report, horizontalalignment="center", verticalalignment="center", fontsize=24)
     else:

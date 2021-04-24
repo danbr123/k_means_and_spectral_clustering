@@ -7,8 +7,8 @@ from output import outputTextFiles, graphic
 from spectral_clustering import spectral_clustering
 
 KUPPER = 20
-MAX_CAPACITY2 = 470  # on Nova - 390 - 395, on Mac 460
-MAX_CAPACITY3 = 470  # on Nova - 395 - 400, on Mac 460
+MAX_CAPACITY2 = 450
+MAX_CAPACITY3 = 450
 
 '''
     main method in the main module

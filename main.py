@@ -6,17 +6,16 @@ from kmeans_init import k_means_pp
 from output import outputTextFiles, graphic
 from spectral_clustering import spectral_clustering
 
-KUPPER = 20
-MAX_CAPACITY2 = 450
-MAX_CAPACITY3 = 450
+'''Program maximum capacity values'''
+KUPPER = 20  # K maximum capacity = 20
+MAX_CAPACITY2 = 450  # N maximum capacity with 2'd points = 450
+MAX_CAPACITY3 = 450  # N maximum capacity with 2'd points= 450
 
 '''
     main method in the main module
     beginning of the software  
     call all other modules methods and in order to create the software product
 '''
-
-
 def main():
     # Initialize algorithm parameters
     K, N, d, r, MAX_ITER = initialize()
@@ -25,12 +24,11 @@ def main():
         return 0
     # Generate data
     dataMatrix, y = make_blobs(n_samples=N, centers=K, n_features=d,
-                               random_state=None)#0)  # TODO replace 1 in random_state = 1 with None
+                               random_state=None)
     dataList = dataMatrix.tolist()
 
     # Normalized Spectral Clustering Algorithm
-    #r = True  # TODO delete this line
-    T, new_K = spectral_clustering(dataMatrix, r, K)
+    T, new_K = spectral_clustering(dataMatrix, r, K)  # new_k is the 'eigengap heuristic' calculated k
     TList = T.tolist()
     Kfirstcentroids_spectral = k_means_pp(T, new_K).tolist()
 
@@ -53,8 +51,6 @@ def main():
     initialize method to read variables from the user (pass from task.py)
     initialize software starter variables - K, N, d, r, MAX_ITER
 '''
-
-
 def initialize():
     parser = argparse.ArgumentParser()
     parser.add_argument("k", type=int)
@@ -68,7 +64,7 @@ def initialize():
         r = True
     else:
         r = False
-    d = random.randint(2, 3) #Todo: remove #
+    d = random.randint(2, 3)
     MAX_ITER = 300
     if r:
         if d == 2:
@@ -78,5 +74,6 @@ def initialize():
             K = random.randint(KUPPER // 2, KUPPER)
             N = random.randint(max(MAX_CAPACITY2 // 2, K + 1), MAX_CAPACITY3)
     return K, N, d, r, MAX_ITER
+
 
 main()

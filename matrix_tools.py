@@ -8,7 +8,6 @@ EPSILON = 0.0001
 calculate the square root of the Diagonal Degree Matrix
 '''
 
-
 def find_DDM(mat):
     size = mat.shape[0]
     I = np.identity(size, dtype=np.float64)
@@ -23,7 +22,6 @@ def find_DDM(mat):
 Normalized Graph Laplacian
 '''
 
-
 def find_NGL(mat):
     size = mat.shape[0]
     D_sq = find_DDM(mat)
@@ -35,7 +33,6 @@ def find_NGL(mat):
 Modified Gram-Schmidt Algorithm
 '''
 
-
 def MGS(mat):
     size = mat.shape[0]
     # Initialize matrices
@@ -43,7 +40,7 @@ def MGS(mat):
     R = np.zeros_like(mat, dtype=np.float64)
     Q = np.zeros_like(mat, dtype=np.float64)
 
-    # We will save in temporarily variables
+    # We will save in temporarily variables and np.arrays to save access time
     for i in range(size):
         col_u = U[:, i]  # i'th column of U
         r_ii = euclidean_norm(col_u)  # Set the diagonals of R to be the euclidean norm of col_u
@@ -65,7 +62,6 @@ def MGS(mat):
 '''
 QR iteration algorithm
 '''
-
 
 def QR_iter(mat):
     # Initialize matrices

@@ -9,7 +9,6 @@ EPSILON = 0.0001
     return array of size (k,d) with initialize point for each cluster
 '''
 
-
 def k_means_pp(data, k):
     # variables and Numpy arrays
     np.random.seed(0)  # use a specific seed to compare with the tester
@@ -38,7 +37,6 @@ def k_means_pp(data, k):
     calculate new di_array (after new centroid were chosen)
 '''
 
-
 def calc_di(data, centroids, count, di_array):
     if count == 1:
         table2 = np.tile(centroids[count - 1],
@@ -58,7 +56,6 @@ def calc_di(data, centroids, count, di_array):
     given D value of centroids - di_array
     calculate probability_array
 '''
-
 
 def update_prob_array(di_array):  # update the array of probabilities with current centroids
     # calc sum of D_i for all points

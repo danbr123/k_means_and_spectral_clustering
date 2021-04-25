@@ -9,7 +9,7 @@ from spectral_clustering import spectral_clustering
 '''Program maximum capacity values'''
 KUPPER = 20  # K maximum capacity = 20
 MAX_CAPACITY2 = 450  # N maximum capacity with 2'd points = 450
-MAX_CAPACITY3 = 450  # N maximum capacity with 2'd points= 450
+MAX_CAPACITY3 = 450  # N maximum capacity with 3'd points= 450
 
 '''
     main method in the main module
